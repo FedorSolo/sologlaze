@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -10,7 +11,6 @@ const prisma = new PrismaClient();
 const CDN = "https://www.sologlazes.com.ar/cdn/shop/files";
 
 async function main() {
-  const bcrypt = await import("bcryptjs");
 
   const cristalina = await prisma.collection.upsert({
     where: { slug: "cristalina" },
