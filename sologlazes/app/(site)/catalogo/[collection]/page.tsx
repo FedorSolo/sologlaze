@@ -10,18 +10,20 @@ export async function generateStaticParams() {
   return collections.map((c) => ({ collection: c.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { collection: string } }): Promise<Metadata> {
-  const collection = await getCollectionBySlug(params.collection);
+export async function generateMetadata({ params }: { params: Promise<{ collection: string }> }): Promise<Metadata> {
+  const { collection: collectionSlug } = await params;
+  const collection = await getCollectionBySlug(collectionSlug);
   if (!collection) return {};
   return { title: collection.name, description: collection.description };
 }
 
-export default async function CollectionPage({ params }: { params: { collection: string } }) {
-  const collection = await getCollectionBySlug(params.collection);
+export default async function CollectionPage({ params }: { params: Promise<{ collection: string }> }) {
+  const { collection: collectionSlug } = await params;
+  const collection = await getCollectionBySlug(collectionSlug);
   if (!collection) notFound();
 
   const [products, filterGroups] = await Promise.all([
-    getProductCards(params.collection),
+    getProductCards(collectionSlug),
     getFilterGroups(),
   ]);
 

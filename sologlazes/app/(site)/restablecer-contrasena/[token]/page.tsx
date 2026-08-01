@@ -1,14 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { use, useActionState } from "react";
 import { AuthCard, AuthField, AuthSubmit } from "@/components/auth/auth-card";
 import { resetPasswordAction, type PasswordResetState } from "@/lib/actions/password-reset";
 
 const initialState: PasswordResetState = {};
 
-export default function RestablecerContrasenaPage({ params }: { params: { token: string } }) {
-  const boundAction = resetPasswordAction.bind(null, params.token);
+export default function RestablecerContrasenaPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params);
+  const boundAction = resetPasswordAction.bind(null, token);
   const [state, formAction, pending] = useActionState(boundAction, initialState);
 
   if (state.success) {

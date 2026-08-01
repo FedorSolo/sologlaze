@@ -9,8 +9,9 @@ import { ProductPurchasePanel } from "@/components/product/product-purchase-pane
 import { ProductReviews } from "@/components/product/product-reviews";
 import { ProductCard } from "@/components/shop/product-card";
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const product = await getProductDetail(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await getProductDetail(slug);
   if (!product) return {};
   return {
     title: product.name,
@@ -23,8 +24,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ProductPage({ params }: { params: { slug: string } }) {
-  const product = await getProductDetail(params.slug);
+export default async function ProductPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const product = await getProductDetail(slug);
   if (!product) notFound();
 
   const [related, session] = await Promise.all([

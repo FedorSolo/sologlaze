@@ -6,11 +6,12 @@ import { OrderStatusBadge } from "@/components/account/order-status-badge";
 import { RepeatOrderButton } from "@/components/account/repeat-order-button";
 import { Truck } from "lucide-react";
 
-export default async function OrderDetailPage({ params }: { params: { orderId: string } }) {
+export default async function OrderDetailPage({ params }: { params: Promise<{ orderId: string }> }) {
+  const { orderId } = await params;
   const session = await auth();
-  if (!session?.user?.id) redirect(`/ingresar?callbackUrl=/cuenta/pedidos/${params.orderId}`);
+  if (!session?.user?.id) redirect(`/ingresar?callbackUrl=/cuenta/pedidos/${orderId}`);
 
-  const raw = await getOrderByNumber(params.orderId);
+  const raw = await getOrderByNumber(orderId);
   if (!raw || raw.userId !== session.user.id) notFound();
 
   const order = toOrderView(raw);

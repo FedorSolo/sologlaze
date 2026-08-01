@@ -4,8 +4,9 @@ import { updateOrderStatusAction } from "@/lib/actions/admin-orders";
 
 const statuses = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"];
 
-export default async function AdminOrderDetailPage({ params }: { params: { id: string } }) {
-  const raw = await getOrderById(params.id);
+export default async function AdminOrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
+  const raw = await getOrderById(id);
   if (!raw) notFound();
   const order = toOrderView(raw);
 
