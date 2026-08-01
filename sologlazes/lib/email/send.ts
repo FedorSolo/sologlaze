@@ -5,7 +5,7 @@ import { OrderDeliveredEmail } from "@/lib/email/templates/order-delivered";
 import { WelcomeEmail } from "@/lib/email/templates/welcome";
 import { PasswordResetEmail } from "@/lib/email/templates/password-reset";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder_configure_in_vercel");
 const FROM = "SoloGlazes <pedidos@sologlazes.com.ar>";
 
 type OrderEmailData = {
