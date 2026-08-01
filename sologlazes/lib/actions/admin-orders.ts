@@ -32,6 +32,7 @@ export async function updateOrderStatusAction(formData: FormData) {
       await sendOrderShippedEmail(order.user.email, {
         orderId: order.orderNumber,
         customerName: order.user.name ?? "",
+        total: Number(order.total),
         trackingCarrier: order.trackingCarrier ?? undefined,
         trackingNumber: order.trackingNumber ?? undefined,
       });
