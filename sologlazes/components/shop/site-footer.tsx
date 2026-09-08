@@ -23,7 +23,6 @@ const columns = [
     title: "Marca",
     links: [
       { href: "/nosotros", label: "Nosotros" },
-      { href: "/galeria", label: "Galería" },
     ],
   },
   {

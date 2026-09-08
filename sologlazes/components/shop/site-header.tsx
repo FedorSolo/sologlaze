@@ -59,7 +59,6 @@ export function SiteHeader() {
             </div>
           </div>
           <Link href="/guia" className="hover:text-accent transition-colors">Guía</Link>
-          <Link href="/galeria" className="hover:text-accent transition-colors">Galería</Link>
           <Link href="/nosotros" className="hover:text-accent transition-colors">Nosotros</Link>
           <Link href="/esmaltes-para-gres" className="hover:text-accent transition-colors">Esmaltes para GRES</Link>
         </nav>
@@ -116,7 +115,6 @@ export function SiteHeader() {
               </Link>
             ))}
             <Link href="/guia" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Guía</Link>
-            <Link href="/galeria" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Galería</Link>
             <Link href="/nosotros" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Nosotros</Link>
             <Link href="/esmaltes-para-gres" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Esmaltes para GRES</Link>
             <Link href="/cuenta" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Cuenta</Link>

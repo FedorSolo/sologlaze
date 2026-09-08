@@ -17,7 +17,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/guia/temperaturas-y-conos",
     "/guia/superficies",
     "/guia/como-aplicar",
-    "/galeria",
     "/nosotros",
     "/esmaltes-para-gres",
     "/contacto",

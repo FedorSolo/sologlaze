@@ -86,31 +86,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Galería preview */}
-      <section className="container py-16 lg:py-24">
-        <div className="mb-10 flex items-end justify-between">
-          <h2 className="text-h2 lg:text-h2-lg">Piezas de nuestra comunidad</h2>
-          <Link href="/galeria" className="hidden text-sm text-accent sm:inline-flex items-center gap-1">
-            Ver galería <ArrowRight size={14} />
-          </Link>
-        </div>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="relative aspect-square overflow-hidden rounded-md bg-surface-muted">
-              <Image
-                src={`/images/gallery-placeholder-${i}.jpg`}
-                alt="Pieza cerámica de un cliente terminada con esmalte SoloGlazes"
-                fill
-                className="object-cover transition-transform duration-300 hover:scale-105"
-              />
-            </div>
-          ))}
-        </div>
-        <Link href="/galeria" className="mt-6 inline-flex items-center gap-1 text-sm text-accent sm:hidden">
-          Ver galería <ArrowRight size={14} />
-        </Link>
-      </section>
-
       {/* CTA final */}
       <section className="container pb-24">
         <div className="flex flex-col items-center gap-4 rounded-lg bg-text-primary px-6 py-16 text-center text-bg">
