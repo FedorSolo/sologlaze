@@ -1,6 +1,8 @@
 import type { Config } from "tailwindcss";
 
-// Tokens sourced from 03-DesignSystem.md — do not hardcode raw hex elsewhere in the app.
+// Tokens realineados al estilo "Palmer" (galería de cerámica, canvas crema,
+// bordes hairline, sin sombras, tipografía condensada). El color ahora lo
+// aportan solo el logo y las fotos de producto — la UI queda casi grayscale.
 export default {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
@@ -11,25 +13,25 @@ export default {
     },
     extend: {
       colors: {
-        bg: "#FAF8F5",
-        surface: "#FFFFFF",
-        "surface-muted": "#F2EEE8",
+        bg: "#F5F6EE", // Gallery Cream
+        surface: "#F5F6EE", // las tarjetas usan el mismo fondo que el canvas — la profundidad viene del borde
+        "surface-muted": "#ECEDE2", // variante sutil para hover/bloques secundarios
         border: {
-          DEFAULT: "#E4DED4",
-          strong: "#CBC2B3",
+          DEFAULT: "#222222", // Ink — el único separador estructural del sistema
+          strong: "#000000", // Lampblack — foco de inputs
         },
         text: {
-          primary: "#231F1B",
-          secondary: "#6B6153",
-          disabled: "#B4AA9B",
+          primary: "#222222", // Ink
+          secondary: "#A1A19C", // Fog
+          disabled: "#C7C7C0",
         },
         accent: {
-          DEFAULT: "#B5502B",
-          hover: "#9A4223",
-          soft: "#F3E4DB",
+          DEFAULT: "#222222", // Ink — sin color de marca en la UI, solo tinta oscura
+          hover: "#000000", // Lampblack
+          soft: "#ECEDE2", // fondo claro para chips/badges activos, siempre con texto Ink (contraste seguro)
         },
         // Del logo real ("Solo"): dorado mostaza + contorno negro grueso.
-        // Se usa en el logotype, badges destacados y micro-momentos (no como accent global de UI).
+        // Es la única fuente de color deliberada en la UI, además de las fotos de producto.
         brand: {
           gold: "#E3B01A",
           "gold-soft": "#FBF0D2",
@@ -48,28 +50,31 @@ export default {
         },
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "Georgia", "serif"],
-        sans: ["var(--font-inter)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
+        sans: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       fontSize: {
-        display: ["2.25rem", { lineHeight: "1.05" }],
-        "display-lg": ["4rem", { lineHeight: "1.05" }],
-        h1: ["1.875rem", { lineHeight: "1.1" }],
-        "h1-lg": ["3rem", { lineHeight: "1.1" }],
-        h2: ["1.5rem", { lineHeight: "1.15" }],
-        "h2-lg": ["2.25rem", { lineHeight: "1.15" }],
-        h3: ["1.25rem", { lineHeight: "1.2" }],
-        "h3-lg": ["1.5rem", { lineHeight: "1.2" }],
+        display: ["2.25rem", { lineHeight: "0.95", letterSpacing: "-0.03em" }],
+        "display-lg": ["4.5rem", { lineHeight: "0.9", letterSpacing: "-0.04em" }],
+        h1: ["1.875rem", { lineHeight: "1.05", letterSpacing: "-0.02em" }],
+        "h1-lg": ["3rem", { lineHeight: "1.0", letterSpacing: "-0.03em" }],
+        h2: ["1.5rem", { lineHeight: "1.1", letterSpacing: "-0.02em" }],
+        "h2-lg": ["2.25rem", { lineHeight: "1.05", letterSpacing: "-0.02em" }],
+        h3: ["1.125rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+        "h3-lg": ["1.25rem", { lineHeight: "1.2", letterSpacing: "-0.02em" }],
+        caption: ["0.6875rem", { lineHeight: "1.4", letterSpacing: "-0.02em" }],
+        "body-lg": ["1.125rem", { lineHeight: "1.4", letterSpacing: "-0.03em" }],
+        small: ["0.75rem", { lineHeight: "1.4", letterSpacing: "-0.02em" }],
       },
       borderRadius: {
-        sm: "8px",
-        md: "14px",
-        lg: "24px",
+        sm: "3px",
+        md: "9px",
+        lg: "9px",
       },
       boxShadow: {
-        sm: "0 1px 2px rgba(35,31,27,0.06)",
-        md: "0 8px 24px rgba(35,31,27,0.08)",
-        lg: "0 24px 48px rgba(35,31,27,0.12)",
+        sm: "none",
+        md: "none",
+        lg: "none",
       },
       spacing: {
         18: "72px",

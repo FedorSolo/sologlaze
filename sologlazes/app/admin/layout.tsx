@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Inter_Tight } from "next/font/google";
 import "../globals.css";
 import { AdminNav } from "@/components/admin/admin-nav";
 
-const fraunces = Fraunces({ subsets: ["latin"], variable: "--font-fraunces", display: "swap" });
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const interTight = Inter_Tight({ subsets: ["latin"], variable: "--font-display", weight: ["300", "400", "500", "600", "700"], display: "swap" });
 
 // Root layout propio para /admin: sin SiteHeader/SiteFooter del sitio público
 // (antes vivía anidado bajo el layout público — ver README, ya resuelto).
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
 
 export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={`${fraunces.variable} ${inter.variable}`}>
+    <html lang="es" className={interTight.variable}>
       <body>
         <div className="flex min-h-screen">
           <AdminNav />
