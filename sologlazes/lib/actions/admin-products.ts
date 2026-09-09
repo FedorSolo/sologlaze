@@ -13,6 +13,16 @@ function slugify(text: string) {
     .replace(/(^-|-$)/g, "");
 }
 
+function parseImageUrls(formData: FormData): string[] {
+  const raw = String(formData.get("images") ?? "[]");
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed.filter((u): u is string => typeof u === "string" && u.length > 0) : [];
+  } catch {
+    return [];
+  }
+}
+
 export type CreateProductState = { error?: string };
 
 export async function createProductAction(
@@ -26,8 +36,8 @@ export async function createProductAction(
   const applicationInstructions = String(formData.get("applicationInstructions") ?? "").trim();
   const variantLabel = String(formData.get("variantLabel") ?? "0.5 kg").trim();
   const price = Number(formData.get("price"));
-  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
-  const imageAlt = String(formData.get("imageAlt") ?? name).trim();
+  const images = parseImageUrls(formData);
+  const videoUrl = String(formData.get("videoUrl") ?? "").trim();
 
   if (!name || !collectionId || !shortDescription || !description || !price || price <= 0) {
     return { error: "Completá al menos nombre, serie, descripciones y un precio válido." };
@@ -50,7 +60,10 @@ export async function createProductAction(
       applicationInstructions: applicationInstructions || "Aplicar sobre bizcocho poroso. Cocción a 1200 °C (cono 5,5).",
       basePrice: price,
       isActive: true,
-      images: imageUrl ? { create: [{ url: imageUrl, alt: imageAlt || name, sortOrder: 0 }] } : undefined,
+      images: images.length
+        ? { create: images.map((url, i) => ({ url, alt: name, sortOrder: i })) }
+        : undefined,
+      videos: videoUrl ? { create: [{ url: videoUrl, alt: name, sortOrder: 0 }] } : undefined,
     },
   });
 
@@ -87,7 +100,8 @@ export async function updateProductAction(
   const price = Number(formData.get("price"));
   const isActive = formData.get("isActive") === "on";
   const inStock = formData.get("inStock") === "on";
-  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
+  const images = parseImageUrls(formData);
+  const videoUrl = String(formData.get("videoUrl") ?? "").trim();
 
   if (!name || !collectionId || !shortDescription || !description || !price || price <= 0) {
     return { error: "Completá al menos nombre, serie, descripciones y un precio válido." };
@@ -110,13 +124,18 @@ export async function updateProductAction(
     });
   }
 
-  if (imageUrl) {
-    const firstImage = await prisma.productImage.findFirst({ where: { productId }, orderBy: { sortOrder: "asc" } });
-    if (firstImage) {
-      await prisma.productImage.update({ where: { id: firstImage.id }, data: { url: imageUrl } });
-    } else {
-      await prisma.productImage.create({ data: { productId, url: imageUrl, alt: product.name, sortOrder: 0 } });
-    }
+  // Reemplaza todas las fotos por la lista actual (más simple y predecible que hacer diff).
+  await prisma.productImage.deleteMany({ where: { productId } });
+  if (images.length) {
+    await prisma.productImage.createMany({
+      data: images.map((url, i) => ({ productId, url, alt: name, sortOrder: i })),
+    });
+  }
+
+  // Mismo criterio para el video — como máximo uno por producto en el admin.
+  await prisma.productVideo.deleteMany({ where: { productId } });
+  if (videoUrl) {
+    await prisma.productVideo.create({ data: { productId, url: videoUrl, alt: name, sortOrder: 0 } });
   }
 
   revalidatePath("/admin/productos");

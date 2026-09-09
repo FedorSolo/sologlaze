@@ -11,7 +11,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
       where: { slug },
       include: {
         variants: { include: { inventory: true } },
-        images: { orderBy: { sortOrder: "asc" }, take: 1 },
+        images: { orderBy: { sortOrder: "asc" } },
+        videos: { orderBy: { sortOrder: "asc" }, take: 1 },
       },
     }),
     getCollections(),
@@ -36,7 +37,8 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
           price: Number(variant?.price ?? product.basePrice),
           isActive: product.isActive,
           inStock: variant?.inventory?.status !== "OUT_OF_STOCK",
-          imageUrl: product.images[0]?.url,
+          imageUrls: product.images.map((img) => img.url),
+          videoUrl: product.videos[0]?.url,
         }}
       />
     </div>

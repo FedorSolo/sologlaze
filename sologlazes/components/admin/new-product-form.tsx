@@ -2,7 +2,8 @@
 
 import { useActionState } from "react";
 import { createProductAction, type CreateProductState } from "@/lib/actions/admin-products";
-import { ImageUploadField } from "@/components/admin/image-upload-field";
+import { MultiImageUploadField } from "@/components/admin/multi-image-upload-field";
+import { VideoUploadField } from "@/components/admin/video-upload-field";
 
 const initialState: CreateProductState = {};
 
@@ -40,8 +41,8 @@ export function NewProductForm({ collections }: { collections: { id: string; nam
         <Field label="Precio (ARS)" name="price" type="number" required />
       </div>
 
-      <ImageUploadField name="imageUrl" label="Foto principal" />
-      <Field label="Texto alternativo de la foto (accesibilidad)" name="imageAlt" />
+      <MultiImageUploadField name="images" label="Fotos del producto" />
+      <VideoUploadField name="videoUrl" label="Video del producto (opcional)" />
 
       {state.error && <p className="text-sm text-status-error">{state.error}</p>}
 
