@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { updateProductAction, type UpdateProductState } from "@/lib/actions/admin-products";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 const initialState: UpdateProductState = {};
 
@@ -14,6 +15,7 @@ type Initial = {
   price: number;
   isActive: boolean;
   inStock: boolean;
+  imageUrl?: string;
 };
 
 export function EditProductForm({
@@ -54,6 +56,8 @@ export function EditProductForm({
       </label>
 
       <Field label="Precio (ARS)" name="price" type="number" defaultValue={String(initial.price)} required />
+
+      <ImageUploadField name="imageUrl" label="Foto principal" defaultUrl={initial.imageUrl} />
 
       <div className="flex gap-6">
         <label className="flex items-center gap-2 text-sm">

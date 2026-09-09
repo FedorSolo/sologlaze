@@ -87,6 +87,7 @@ export async function updateProductAction(
   const price = Number(formData.get("price"));
   const isActive = formData.get("isActive") === "on";
   const inStock = formData.get("inStock") === "on";
+  const imageUrl = String(formData.get("imageUrl") ?? "").trim();
 
   if (!name || !collectionId || !shortDescription || !description || !price || price <= 0) {
     return { error: "Completá al menos nombre, serie, descripciones y un precio válido." };
@@ -107,6 +108,15 @@ export async function updateProductAction(
       update: { status: inStock ? "IN_STOCK" : "OUT_OF_STOCK" },
       create: { variantId: variant.id, quantity: inStock ? 25 : 0, status: inStock ? "IN_STOCK" : "OUT_OF_STOCK" },
     });
+  }
+
+  if (imageUrl) {
+    const firstImage = await prisma.productImage.findFirst({ where: { productId }, orderBy: { sortOrder: "asc" } });
+    if (firstImage) {
+      await prisma.productImage.update({ where: { id: firstImage.id }, data: { url: imageUrl } });
+    } else {
+      await prisma.productImage.create({ data: { productId, url: imageUrl, alt: product.name, sortOrder: 0 } });
+    }
   }
 
   revalidatePath("/admin/productos");

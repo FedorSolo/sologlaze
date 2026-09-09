@@ -1,8 +1,6 @@
 import type { NextConfig } from "next";
-import path from "path";
 
 const nextConfig: NextConfig = {
-  outputFileTracingRoot: path.join(__dirname),
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,7 +11,10 @@ const nextConfig: NextConfig = {
         hostname: "www.sologlazes.com.ar",
         pathname: "/cdn/shop/**",
       },
-      // TODO: quitar una vez migradas las fotos a Cloudinary/UploadThing (ver PRD, sección 7).
+      {
+        protocol: "https",
+        hostname: "*.public.blob.vercel-storage.com",
+      },
     ],
   },
 };

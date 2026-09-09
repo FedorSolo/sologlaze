@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { createProductAction, type CreateProductState } from "@/lib/actions/admin-products";
+import { ImageUploadField } from "@/components/admin/image-upload-field";
 
 const initialState: CreateProductState = {};
 
@@ -39,7 +40,7 @@ export function NewProductForm({ collections }: { collections: { id: string; nam
         <Field label="Precio (ARS)" name="price" type="number" required />
       </div>
 
-      <Field label="URL de la foto principal (opcional)" name="imageUrl" placeholder="https://..." />
+      <ImageUploadField name="imageUrl" label="Foto principal" />
       <Field label="Texto alternativo de la foto (accesibilidad)" name="imageAlt" />
 
       {state.error && <p className="text-sm text-status-error">{state.error}</p>}

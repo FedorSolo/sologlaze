@@ -9,7 +9,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
   const [product, collections] = await Promise.all([
     prisma.product.findUnique({
       where: { slug },
-      include: { variants: { include: { inventory: true } } },
+      include: {
+        variants: { include: { inventory: true } },
+        images: { orderBy: { sortOrder: "asc" }, take: 1 },
+      },
     }),
     getCollections(),
   ]);
@@ -33,6 +36,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
           price: Number(variant?.price ?? product.basePrice),
           isActive: product.isActive,
           inStock: variant?.inventory?.status !== "OUT_OF_STOCK",
+          imageUrl: product.images[0]?.url,
         }}
       />
     </div>
