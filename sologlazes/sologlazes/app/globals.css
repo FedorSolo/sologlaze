@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --color-bg: #f5f6ee;
+    --color-surface: #f5f6ee;
+  }
+
+  body {
+    @apply bg-bg text-text-primary font-sans antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  h1, h2, h3 {
+    @apply font-display font-light;
+  }
+
+  ::selection {
+    @apply bg-accent-soft text-accent;
+  }
+
+  :focus-visible {
+    outline: 2px solid #222222;
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
