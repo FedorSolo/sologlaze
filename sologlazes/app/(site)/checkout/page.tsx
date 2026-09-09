@@ -6,9 +6,9 @@ import { useCart } from "@/lib/cart-context";
 import { createOrderAction } from "@/lib/actions/checkout";
 
 const SHIPPING_OPTIONS = [
-  { id: "mensajeria_caba", label: "Mensajería propia en CABA", price: 3500 },
-  { id: "andreani", label: "Andreani (a todo el país)", price: 6800 },
-  { id: "correo_argentino", label: "Correo Argentino (a todo el país)", price: 5900 },
+  { id: "mensajeria_caba", label: "Mensajería propia en CABA (desde 2kg)", price: 10000 },
+  { id: "andreani", label: "Andreani (a todo el país)", price: 15000 },
+  { id: "correo_argentino", label: "Correo Argentino (a todo el país)", price: 15000 },
 ];
 
 export default function CheckoutPage() {
@@ -16,7 +16,7 @@ export default function CheckoutPage() {
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0].id);
-  const [payment, setPayment] = useState<"MERCADO_PAGO" | "MANUAL">("MERCADO_PAGO");
+  const [payment, setPayment] = useState<"MERCADO_PAGO" | "MANUAL" | "EFECTIVO">("MERCADO_PAGO");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,10 +38,13 @@ export default function CheckoutPage() {
         street: String(formData.get("street")),
         postalCode: String(formData.get("postalCode")),
         province: String(formData.get("province")),
-        comment: String(formData.get("comment") ?? "") || undefined,
+        comment: [
+          payment === "EFECTIVO" ? "Pago: Efectivo (retiro en el taller o contra entrega en CABA)." : "",
+          String(formData.get("comment") ?? ""),
+        ].filter(Boolean).join(" ") || undefined,
         shippingLabel: shippingOption.label,
         shippingCost: shippingOption.price,
-        paymentProvider: payment,
+        paymentProvider: payment === "MERCADO_PAGO" ? "MERCADO_PAGO" : "MANUAL",
         lines: lines.map((l) => ({ slug: l.slug, quantity: l.quantity })),
       });
       clear();
@@ -136,7 +139,15 @@ export default function CheckoutPage() {
                 }`}
               >
                 <input type="radio" name="paymentOption" checked={payment === "MANUAL"} onChange={() => setPayment("MANUAL")} />
-                Transferencia / a coordinar por WhatsApp
+                Transferencia bancaria
+              </label>
+              <label
+                className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-sm ${
+                  payment === "EFECTIVO" ? "border-accent bg-accent-soft" : "border-border"
+                }`}
+              >
+                <input type="radio" name="paymentOption" checked={payment === "EFECTIVO"} onChange={() => setPayment("EFECTIVO")} />
+                Efectivo (retiro en el taller o contra entrega en CABA)
               </label>
             </div>
             <p className="mt-2 text-xs text-text-secondary">

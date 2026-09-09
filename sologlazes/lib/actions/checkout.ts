@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { sendOrderConfirmationEmail } from "@/lib/email/send";
+import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/send";
 
 export type CheckoutInput = {
   name: string;
@@ -100,6 +100,17 @@ export async function createOrderAction(input: CheckoutInput) {
     await prisma.emailLog.create({
       data: { orderId: order.id, type: "ORDER_CONFIRMATION", recipient: input.email, status: "FAILED" },
     });
+  }
+
+  try {
+    await sendAdminNewOrderEmail({
+      orderId: order.orderNumber,
+      total,
+      customerName: input.name,
+      customerPhone: input.phone,
+    });
+  } catch {
+    // No bloqueamos el checkout si falla la notificación al admin
   }
 
   return { orderNumber: order.orderNumber };

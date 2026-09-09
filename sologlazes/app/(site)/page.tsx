@@ -53,14 +53,24 @@ export default async function HomePage() {
             <Link
               key={c.slug}
               href={`/catalogo/${c.slug}`}
-              className="group rounded-lg border border-border bg-surface p-6 transition-all hover:-translate-y-1 hover:shadow-md"
+              className="group overflow-hidden rounded-lg border border-border bg-surface transition-all hover:-translate-y-1 hover:shadow-md"
             >
-              <div className={`mb-4 h-1 w-10 rounded-full ${collectionAccent[c.slug] ?? "bg-accent"}`} />
-              <h3 className="mb-2 text-h3">{c.name}</h3>
-              <p className="mb-4 text-body text-text-secondary">{c.description}</p>
-              <span className="inline-flex items-center gap-1 text-sm text-accent">
-                Explorar <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
-              </span>
+              <div className="relative aspect-[4/3] w-full overflow-hidden bg-surface-muted">
+                <Image
+                  src={c.heroImageUrl}
+                  alt={`Piezas de cerámica con esmaltes de la línea ${c.name}`}
+                  fill
+                  className="object-cover transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="p-6">
+                <div className={`mb-4 h-1 w-10 rounded-full ${collectionAccent[c.slug] ?? "bg-accent"}`} />
+                <h3 className="mb-2 text-h3">{c.name}</h3>
+                <p className="mb-4 text-body text-text-secondary">{c.description}</p>
+                <span className="inline-flex items-center gap-1 text-sm text-accent">
+                  Explorar <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
             </Link>
           ))}
         </div>
@@ -93,7 +103,7 @@ export default async function HomePage() {
           <p className="max-w-md text-body text-bg/80">
             Escribinos por WhatsApp — te ayudamos a elegir el esmalte según tu horno y tu pieza.
           </p>
-          
+          <a
             href="https://wa.me/5491127379589"
             className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-white transition-colors hover:bg-accent-hover"
           >

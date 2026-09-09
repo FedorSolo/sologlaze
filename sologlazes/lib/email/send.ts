@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import { OrderConfirmationEmail } from "@/lib/email/templates/order-confirmation";
 import { OrderShippedEmail } from "@/lib/email/templates/order-shipped";
 import { OrderDeliveredEmail } from "@/lib/email/templates/order-delivered";
+import { AdminNewOrderEmail } from "@/lib/email/templates/admin-new-order";
 import { WelcomeEmail } from "@/lib/email/templates/welcome";
 import { PasswordResetEmail } from "@/lib/email/templates/password-reset";
 
@@ -40,6 +41,24 @@ export async function sendOrderDeliveredEmail(to: string, data: OrderEmailData) 
     to,
     subject: `¡Tu pedido ${data.orderId} llegó!`,
     react: OrderDeliveredEmail(data),
+  });
+}
+
+// Notificación al vendedor cuando entra un pedido nuevo — configurar ADMIN_NOTIFICATION_EMAIL en Vercel.
+export async function sendAdminNewOrderEmail(data: {
+  orderId: string;
+  total: number;
+  customerName: string;
+  customerPhone?: string;
+  isQuickOrder?: boolean;
+}) {
+  const adminEmail = process.env.ADMIN_NOTIFICATION_EMAIL;
+  if (!adminEmail) return null; // no configurado — no se envía, no rompe el checkout
+  return resend.emails.send({
+    from: FROM,
+    to: adminEmail,
+    subject: `${data.isQuickOrder ? "⚡ Pedido rápido" : "Nuevo pedido"} ${data.orderId}`,
+    react: AdminNewOrderEmail(data),
   });
 }
 

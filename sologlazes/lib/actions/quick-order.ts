@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { sendAdminNewOrderEmail } from "@/lib/email/send";
 
 export type QuickOrderInput = {
   phone: string;
@@ -76,6 +77,18 @@ export async function createQuickOrderAction(input: QuickOrderInput) {
     .join("%0A");
   const waMessage = `Hola! Quiero hacer el pedido ${order.orderNumber}:%0A${itemsText}%0ATotal: $${subtotal.toLocaleString("es-AR")}%0AMi WhatsApp: ${input.phone}`;
   const whatsappUrl = `https://wa.me/5491127379589?text=${waMessage}`;
+
+  try {
+    await sendAdminNewOrderEmail({
+      orderId: order.orderNumber,
+      total: subtotal,
+      customerName: "Pedido rápido",
+      customerPhone: input.phone,
+      isQuickOrder: true,
+    });
+  } catch {
+    // No bloqueamos el flujo si falla la notificación
+  }
 
   return { orderNumber: order.orderNumber, whatsappUrl };
 }
