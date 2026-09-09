@@ -36,7 +36,7 @@ export default async function HomePage() {
         </div>
         <div className="relative mt-4 aspect-video w-full max-w-4xl overflow-hidden rounded-lg bg-surface-muted">
           <Image
-            src="/images/hero-placeholder.jpg"
+            src="https://www.sologlazes.com.ar/cdn/shop/files/IMG_5910.jpg"
             alt="Pieza cerámica terminada con esmalte SoloGlazes, mostrando textura y brillo tras la cocción"
             fill
             className="object-cover"
@@ -93,7 +93,7 @@ export default async function HomePage() {
           <p className="max-w-md text-body text-bg/80">
             Escribinos por WhatsApp — te ayudamos a elegir el esmalte según tu horno y tu pieza.
           </p>
-          <a
+          
             href="https://wa.me/5491127379589"
             className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-white transition-colors hover:bg-accent-hover"
           >
