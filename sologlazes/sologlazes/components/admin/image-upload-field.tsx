@@ -5,6 +5,19 @@ import Image from "next/image";
 import { upload } from "@vercel/blob/client";
 import { Upload, X } from "lucide-react";
 
+function sanitizeFilename(name: string): string {
+  const dot = name.lastIndexOf(".");
+  const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+  const base = (dot >= 0 ? name.slice(0, dot) : name)
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-zA-Z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "")
+    .slice(0, 60);
+  return `${Date.now()}-${base || "archivo"}${ext ? "." + ext : ""}`;
+}
+
+
 export function ImageUploadField({
   name,
   label,
@@ -22,7 +35,7 @@ export function ImageUploadField({
     setUploading(true);
     setError(null);
     try {
-      const blob = await upload(file.name, file, {
+      const blob = await upload(sanitizeFilename(file.name), file, {
         access: "public",
         handleUploadUrl: "/api/upload",
       });
