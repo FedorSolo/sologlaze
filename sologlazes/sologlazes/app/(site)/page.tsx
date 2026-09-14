@@ -16,6 +16,8 @@ export default async function HomePage() {
 
   return (
     <>
+      <h1 className="sr-only">SoloGlazes — Esmaltes cerámicos listos para usar, cono 5–6</h1>
+
       {/* Hero — imagen a pantalla completa, sin texto encima */}
       <section className="relative -mt-px h-[60vh] w-full overflow-hidden lg:h-[85vh]">
         <Image
