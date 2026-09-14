@@ -2,21 +2,16 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { upload } from "@vercel/blob/client";
 import { Upload, X } from "lucide-react";
 
-function sanitizeFilename(name: string): string {
-  const dot = name.lastIndexOf(".");
-  const ext = dot >= 0 ? name.slice(dot + 1).toLowerCase().replace(/[^a-z0-9]/g, "") : "";
-  const base = (dot >= 0 ? name.slice(0, dot) : name)
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-zA-Z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "")
-    .slice(0, 60);
-  return `${Date.now()}-${base || "archivo"}${ext ? "." + ext : ""}`;
+async function uploadOne(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append("file", file);
+  const res = await fetch("/api/upload", { method: "POST", body: formData });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Error al subir la imagen");
+  return data.url as string;
 }
-
 
 export function MultiImageUploadField({
   name,
@@ -37,11 +32,7 @@ export function MultiImageUploadField({
     try {
       const uploaded: string[] = [];
       for (const file of Array.from(files)) {
-        const blob = await upload(sanitizeFilename(file.name), file, {
-          access: "public",
-          handleUploadUrl: "/api/upload",
-        });
-        uploaded.push(blob.url);
+        uploaded.push(await uploadOne(file));
       }
       setUrls((prev) => [...prev, ...uploaded]);
     } catch (err) {
