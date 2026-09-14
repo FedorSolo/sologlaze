@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
     const formData = new FormData(formRef.current!);
     try {
-      const { orderNumber } = await createOrderAction({
+      const { orderNumber, mpCheckoutUrl } = await createOrderAction({
         name: String(formData.get("name")),
         email: String(formData.get("email")),
         phone: String(formData.get("phone")),
@@ -64,7 +64,11 @@ export default function CheckoutPage() {
         lines: lines.map((l) => ({ slug: l.slug, quantity: l.quantity })),
       });
       clear();
-      router.push(`/checkout/confirmacion/${orderNumber}`);
+      if (mpCheckoutUrl) {
+        window.location.href = mpCheckoutUrl;
+      } else {
+        router.push(`/checkout/confirmacion/${orderNumber}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "No pudimos procesar el pedido. Intentá de nuevo.");
       setSubmitting(false);
