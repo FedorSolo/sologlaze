@@ -3,6 +3,8 @@ import Image from "next/image";
 import { ArrowRight, MessageCircle } from "lucide-react";
 import { getCollections } from "@/lib/queries/collections";
 
+export const revalidate = 60;
+
 const collectionAccent: Record<string, string> = {
   cristalina: "bg-collection-cristalina",
   floating: "bg-collection-floating",
@@ -14,18 +16,23 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="container flex flex-col items-center gap-8 pb-16 pt-12 text-center lg:pb-24 lg:pt-20">
+      {/* Hero — imagen a pantalla completa, sin texto encima */}
+      <section className="relative -mt-px h-[60vh] w-full overflow-hidden lg:h-[85vh]">
+        <Image
+          src="/images/hero.jpg"
+          alt="Pieza cerámica terminada con esmalte SoloGlazes, mostrando textura y brillo tras la cocción"
+          fill
+          priority
+          quality={95}
+          sizes="100vw"
+          className="object-cover"
+        />
+      </section>
+
+      <section className="container flex flex-col items-center gap-4 py-10 text-center lg:py-14">
         <span className="rounded-full bg-accent-soft px-4 py-1.5 text-caption uppercase tracking-wide text-accent">
           Cono 5–6 · 1200°C · Listos para usar
         </span>
-        <h1 className="max-w-3xl text-display font-display lg:text-display-lg">
-          No vendemos esmalte. Vendemos el resultado que imaginaste.
-        </h1>
-        <p className="max-w-xl text-body-lg text-text-secondary">
-          Esmaltes cerámicos listos para aplicar, sin tamizar ni mezclar. El efecto que ves
-          en la pieza terminada es exactamente lo que vas a lograr en la tuya.
-        </p>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/catalogo" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-white transition-colors hover:bg-accent-hover">
             Ver catálogo <ArrowRight size={18} />
@@ -34,20 +41,11 @@ export default async function HomePage() {
             No sé qué elegir
           </Link>
         </div>
-        <div className="relative mt-4 aspect-video w-full max-w-4xl overflow-hidden rounded-lg bg-surface-muted">
-          <Image
-            src="/images/hero.jpg"
-            alt="Pieza cerámica terminada con esmalte SoloGlazes, mostrando textura y brillo tras la cocción"
-            fill
-            className="object-cover"
-            priority
-          />
-        </div>
       </section>
 
       {/* Colecciones */}
       <section className="container py-16 lg:py-24">
-        <h2 className="mb-10 text-h2 lg:text-h2-lg">Tres líneas, tres resultados</h2>
+        <h2 className="mb-10 text-h2 lg:text-h2-lg">Nuestras líneas</h2>
         <div className="grid gap-6 md:grid-cols-3">
           {collections.map((c) => (
             <Link
@@ -73,26 +71,6 @@ export default async function HomePage() {
               </div>
             </Link>
           ))}
-        </div>
-      </section>
-
-      {/* Cómo funciona */}
-      <section className="bg-surface-muted py-16 lg:py-24">
-        <div className="container">
-          <h2 className="mb-10 text-h2 lg:text-h2-lg">Simple, de principio a fin</h2>
-          <div className="grid gap-8 sm:grid-cols-3">
-            {[
-              { step: "1", title: "Elegí el efecto", text: "Filtrá por temperatura, superficie o color y mirá el resultado real en la galería." },
-              { step: "2", title: "Aplicá sin preparación", text: "Listo para usar — sin tamizar, sin mezclar, sin prueba y error." },
-              { step: "3", title: "Horneá a cono 5–6", text: "1200°C y obtenés exactamente el efecto que viste en la foto." },
-            ].map((s) => (
-              <div key={s.step}>
-                <span className="mb-3 block font-display text-h2 text-accent">{s.step}</span>
-                <h3 className="mb-2 text-h3">{s.title}</h3>
-                <p className="text-body text-text-secondary">{s.text}</p>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 

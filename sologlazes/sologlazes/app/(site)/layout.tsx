@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/shop/site-header";
 import { SiteFooter } from "@/components/shop/site-footer";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthSessionProvider } from "@/lib/session-provider";
+import { LangProvider } from "@/lib/i18n";
 
 const interTight = Inter_Tight({
   subsets: ["latin"],
@@ -26,13 +27,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="es" className={interTight.variable}>
       <body>
-        <AuthSessionProvider>
-          <CartProvider>
-            <SiteHeader />
-            <main>{children}</main>
-            <SiteFooter />
-          </CartProvider>
-        </AuthSessionProvider>
+        <LangProvider>
+          <AuthSessionProvider>
+            <CartProvider>
+              <SiteHeader />
+              <main>{children}</main>
+              <SiteFooter />
+            </CartProvider>
+          </AuthSessionProvider>
+        </LangProvider>
       </body>
     </html>
   );

@@ -117,12 +117,13 @@ model Product {
 }
 
 model ProductVariant {
-  id        String   @id @default(cuid())
-  productId String
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  sku       String   @unique
-  label     String
-  price     Decimal  @db.Decimal(10, 2)
+  id             String   @id @default(cuid())
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  sku            String   @unique
+  label          String
+  price          Decimal  @db.Decimal(10, 2)
+  compareAtPrice Decimal? @db.Decimal(10, 2) // precio anterior (tachado) — null si no hay descuento
 
   cartItems  CartItem[]
   orderItems OrderItem[]

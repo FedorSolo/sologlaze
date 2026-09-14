@@ -5,6 +5,8 @@ import { CatalogBrowser } from "@/components/catalog/catalog-browser";
 import { getCollections, getCollectionBySlug } from "@/lib/queries/collections";
 import { getProductCards, getFilterGroups } from "@/lib/queries/products";
 
+export const revalidate = 60; // re-consulta la base cada 60s como máximo, no queda "congelado" hasta el próximo deploy
+
 export async function generateStaticParams() {
   const collections = await getCollections();
   return collections.map((c) => ({ collection: c.slug }));

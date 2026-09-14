@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { MapPin } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getOrderById, toOrderView } from "@/lib/queries/orders";
 import { updateOrderStatusAction } from "@/lib/actions/admin-orders";
@@ -78,11 +79,23 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
           {order.address && (
             <section>
               <h2 className="mb-3 text-h3">Dirección de envío</h2>
-              <div className="rounded-lg border border-border p-4 text-sm text-text-secondary">
-                <p>{order.address.street}</p>
-                <p>
-                  {order.address.city}, {order.address.province} — CP {order.address.postalCode}
-                </p>
+              <div className="flex items-start justify-between gap-3 rounded-lg border border-border p-4 text-sm text-text-secondary">
+                <div>
+                  <p>{order.address.street}</p>
+                  <p>
+                    {order.address.city}, {order.address.province} — CP {order.address.postalCode}
+                  </p>
+                </div>
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                    `${order.address.street}, ${order.address.city}, ${order.address.province}`
+                  )}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-border-strong px-3 py-1.5 text-xs hover:bg-surface-muted"
+                >
+                  <MapPin size={14} /> Ver en el mapa
+                </a>
               </div>
             </section>
           )}
@@ -103,8 +116,14 @@ export default async function AdminOrderDetailPage({ params }: { params: Promise
             </label>
 
             <label className="block text-sm">
-              <span className="mb-1 block text-text-secondary">Método / transportista</span>
-              <input name="trackingCarrier" defaultValue={order.trackingCarrier} className="h-11 w-full rounded-sm border border-border px-3" />
+              <span className="mb-1 block text-text-secondary">Método de envío</span>
+              <select name="trackingCarrier" defaultValue={order.trackingCarrier} className="h-11 w-full rounded-sm border border-border px-3">
+                <option value="">Sin definir</option>
+                <option value="Retiro en el taller">Retiro en el taller (self pickup)</option>
+                <option value="Mensajería propia en CABA">Mensajería propia en CABA</option>
+                <option value="Correo Argentino">Correo Argentino</option>
+                <option value="Andreani">Andreani</option>
+              </select>
             </label>
 
             <label className="block text-sm">

@@ -14,8 +14,9 @@ type Initial = {
   description: string;
   applicationInstructions: string;
   price: number;
+  compareAtPrice?: number;
   isActive: boolean;
-  inStock: boolean;
+  stockQuantity: number;
   imageUrls?: string[];
   videoUrl?: string;
 };
@@ -57,19 +58,24 @@ export function EditProductForm({
         <textarea name="applicationInstructions" defaultValue={initial.applicationInstructions} rows={3} className="w-full rounded-sm border border-border p-3" />
       </label>
 
-      <Field label="Precio (ARS)" name="price" type="number" defaultValue={String(initial.price)} required />
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Precio nuevo (ARS)" name="price" type="number" defaultValue={String(initial.price)} required />
+        <Field
+          label="Precio anterior (ARS, opcional — tachado)"
+          name="compareAtPrice"
+          type="number"
+          defaultValue={initial.compareAtPrice ? String(initial.compareAtPrice) : ""}
+        />
+      </div>
 
       <MultiImageUploadField name="images" label="Fotos del producto" defaultUrls={initial.imageUrls} />
       <VideoUploadField name="videoUrl" label="Video del producto (opcional)" defaultUrl={initial.videoUrl} />
 
-      <div className="flex gap-6">
-        <label className="flex items-center gap-2 text-sm">
+      <div className="grid grid-cols-2 gap-4">
+        <Field label="Stock disponible (unidades)" name="stockQuantity" type="number" defaultValue={String(initial.stockQuantity)} required />
+        <label className="flex items-center gap-2 self-end pb-2.5 text-sm">
           <input type="checkbox" name="isActive" defaultChecked={initial.isActive} />
           Producto activo (visible en el catálogo)
-        </label>
-        <label className="flex items-center gap-2 text-sm">
-          <input type="checkbox" name="inStock" defaultChecked={initial.inStock} />
-          En stock
         </label>
       </div>
 

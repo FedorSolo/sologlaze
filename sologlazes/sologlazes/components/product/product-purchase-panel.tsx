@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Heart, Minus, Plus } from "lucide-react";
+import { Heart, Minus, Plus, MessageCircle, Utensils, WashingMachine } from "lucide-react";
 import type { ProductDetail } from "@/lib/mock-data";
-import { useCart } from "@/lib/cart-context";
+import { useCart, parseWeightKg } from "@/lib/cart-context";
+import { useLang } from "@/lib/i18n";
 import { toggleFavoriteAction } from "@/lib/actions/favorites";
 
 const collectionTextColor: Record<string, string> = {
@@ -18,6 +19,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
   const [added, setAdded] = useState(false);
   const [pending, startTransition] = useTransition();
   const { add } = useCart();
+  const { t } = useLang();
   const variants = product.variants ?? [];
   const [selectedVariantId, setSelectedVariantId] = useState(variants[0]?.id);
   const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
@@ -42,7 +44,8 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
         price: displayPrice,
         imageUrl: product.images[0]?.url ?? "",
       },
-      qty
+      qty,
+      parseWeightKg(selectedVariant?.label)
     );
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
@@ -53,8 +56,22 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       <p className={`mb-1 text-h3 uppercase tracking-wide ${collectionTextColor[product.collection.slug] ?? "text-accent"}`}>{product.collection.name}</p>
       <h1 className="mb-2 text-h1 lg:text-h1-lg">{product.name}</h1>
       <p className="mb-4 text-body-lg text-text-secondary">{product.shortDescription}</p>
-      <p className="mb-6 text-h2">
-        $ {displayPrice.toLocaleString("es-AR")} {product.currency}
+
+      <div className="mb-4 flex flex-wrap gap-4 text-xs text-text-secondary">
+        <span className="flex items-center gap-1.5">
+          <Utensils size={15} /> Apto para vajilla y alimentos
+        </span>
+        <span className="flex items-center gap-1.5">
+          <WashingMachine size={15} /> Apto lavavajillas
+        </span>
+      </div>
+      <p className="mb-6 flex items-baseline gap-3 text-h2">
+        <span>$ {displayPrice.toLocaleString("es-AR")} {product.currency}</span>
+        {(selectedVariant?.compareAtPrice ?? product.compareAtPrice) && (
+          <span className="text-lg text-text-secondary line-through">
+            $ {(selectedVariant?.compareAtPrice ?? product.compareAtPrice)!.toLocaleString("es-AR")}
+          </span>
+        )}
       </p>
 
       {variants.length > 1 && (
@@ -101,7 +118,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
             onClick={handleAdd}
             className="flex-1 rounded-full bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
-            {added ? "Agregado ✓" : "Agregar al carrito"}
+            {added ? "✓" : t("agregarAlCarrito")}
           </button>
 
           <button
@@ -113,6 +130,22 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
             <Heart size={18} fill={favorited ? "currentColor" : "none"} className={favorited ? "text-accent" : ""} />
           </button>
         </div>
+      )}
+
+      <a
+        href={`https://wa.me/5491127379589?text=${encodeURIComponent(`Hola! Quiero pedir el esmalte ${product.name}`)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 flex items-center justify-center gap-2 rounded-full border border-border-strong py-3 text-sm font-medium transition-colors hover:bg-surface-muted"
+      >
+        <MessageCircle size={16} /> Pedido rápido por WhatsApp
+      </a>
+
+      {product.description && (
+        <details className="mb-3 border-t border-border py-4" open>
+          <summary className="cursor-pointer text-sm font-medium">Descripción</summary>
+          <p className="mt-3 whitespace-pre-line text-sm text-text-secondary">{product.description}</p>
+        </details>
       )}
 
       <details className="mb-3 border-t border-border py-4" open>

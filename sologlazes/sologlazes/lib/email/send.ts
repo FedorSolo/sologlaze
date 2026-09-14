@@ -15,6 +15,9 @@ type OrderEmailData = {
   total: number;
   trackingNumber?: string;
   trackingCarrier?: string;
+  items?: { name: string; variantLabel?: string; quantity: number; price: number }[];
+  address?: { street: string; city: string; province: string; postalCode: string };
+  shippingLabel?: string;
 };
 
 export async function sendOrderConfirmationEmail(to: string, data: OrderEmailData) {

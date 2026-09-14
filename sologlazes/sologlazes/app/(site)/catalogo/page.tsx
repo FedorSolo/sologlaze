@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Todos los esmaltes cerámicos SoloGlazes — filtrá por temperatura, superficie y efecto.",
 };
 
+export const revalidate = 60;
+
 export default async function CatalogoPage() {
   const [products, filterGroups] = await Promise.all([getProductCards(), getFilterGroups()]);
 

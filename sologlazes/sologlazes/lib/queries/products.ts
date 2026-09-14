@@ -21,6 +21,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
 } {
   const inventory = product.variants[0]?.inventory;
   const price = product.variants[0]?.price ?? product.basePrice;
+  const compareAtPrice = product.variants[0]?.compareAtPrice;
 
   return {
     slug: product.slug,
@@ -29,6 +30,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
     temperatureLabel: attrValue(product, "temperature"),
     temperature: attrValue(product, "temperature"),
     price: Number(price),
+    compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
     currency: product.currency,
     imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
     imageAltUrl: product.images[1]?.url,
@@ -76,19 +78,22 @@ export async function getProductDetail(slug: string) {
 
   const inventory = product.variants[0]?.inventory;
   const price = product.variants[0]?.price ?? product.basePrice;
+  const compareAtPrice = product.variants[0]?.compareAtPrice;
 
   return {
     slug: product.slug,
     name: product.name,
     collection: product.collection as { slug: "cristalina" | "floating" | "grrr"; name: string },
     price: Number(price),
+    compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
     currency: product.currency,
     shortDescription: product.shortDescription,
     description: product.description,
     applicationInstructions: product.applicationInstructions,
     inStock: inventory ? inventory.status !== "OUT_OF_STOCK" : true,
+    stockQuantity: inventory?.quantity ?? 0,
     attributes: [{ label: "Temperatura", value: attrValue(product, "temperature") }],
-    variants: product.variants.map((v) => ({ id: v.id, label: v.label, price: Number(v.price) })),
+    variants: product.variants.map((v) => ({ id: v.id, label: v.label, price: Number(v.price), compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined })),
     images: product.images.map((img) => ({ url: img.url, alt: img.alt, type: img.type })),
     videoUrl: product.videos[0]?.url,
     reviews: product.reviews.map((r) => ({

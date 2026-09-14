@@ -35,8 +35,9 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
           description: product.description,
           applicationInstructions: product.applicationInstructions,
           price: Number(variant?.price ?? product.basePrice),
+          compareAtPrice: variant?.compareAtPrice ? Number(variant.compareAtPrice) : undefined,
           isActive: product.isActive,
-          inStock: variant?.inventory?.status !== "OUT_OF_STOCK",
+          stockQuantity: variant?.inventory?.quantity ?? 0,
           imageUrls: product.images.map((img) => img.url),
           videoUrl: product.videos[0]?.url,
         }}

@@ -9,20 +9,33 @@ export type CartLine = {
   price: number;
   imageUrl: string;
   quantity: number;
+  weightKg?: number;
 };
 
 type CartContextValue = {
   lines: CartLine[];
-  add: (product: Pick<ProductCardData, "slug" | "name" | "price" | "imageUrl">, qty?: number) => void;
+  add: (product: Pick<ProductCardData, "slug" | "name" | "price" | "imageUrl">, qty?: number, weightKg?: number) => void;
   updateQty: (slug: string, qty: number) => void;
   remove: (slug: string) => void;
   clear: () => void;
   subtotal: number;
+  totalWeightKg: number;
   count: number;
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
 const STORAGE_KEY = "sologlazes:cart";
+
+// Intenta extraer el peso en kg de una etiqueta de variante tipo "0.5 kg", "1 kg" o "200 g".
+// Si no matchea nada (ej. "Frasco"), devuelve undefined — ese producto no suma al umbral de envío gratis.
+export function parseWeightKg(label: string | undefined | null): number | undefined {
+  if (!label) return undefined;
+  const kgMatch = label.match(/([\d.,]+)\s*kg/i);
+  if (kgMatch) return parseFloat(kgMatch[1].replace(",", "."));
+  const gMatch = label.match(/([\d.,]+)\s*g\b/i);
+  if (gMatch) return parseFloat(gMatch[1].replace(",", ".")) / 1000;
+  return undefined;
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [lines, setLines] = useState<CartLine[]>([]);
@@ -43,13 +56,13 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
   }, [lines, hydrated]);
 
-  const add: CartContextValue["add"] = (product, qty = 1) => {
+  const add: CartContextValue["add"] = (product, qty = 1, weightKg) => {
     setLines((prev) => {
       const existing = prev.find((l) => l.slug === product.slug);
       if (existing) {
         return prev.map((l) => (l.slug === product.slug ? { ...l, quantity: l.quantity + qty } : l));
       }
-      return [...prev, { slug: product.slug, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: qty }];
+      return [...prev, { slug: product.slug, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: qty, weightKg }];
     });
   };
 
@@ -61,10 +74,11 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const clear = () => setLines([]);
 
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
+  const totalWeightKg = lines.reduce((sum, l) => sum + (l.weightKg ?? 0) * l.quantity, 0);
   const count = lines.reduce((sum, l) => sum + l.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ lines, add, updateQty, remove, clear, subtotal, count }}>
+    <CartContext.Provider value={{ lines, add, updateQty, remove, clear, subtotal, totalWeightKg, count }}>
       {children}
     </CartContext.Provider>
   );

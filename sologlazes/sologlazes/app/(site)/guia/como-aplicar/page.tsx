@@ -76,6 +76,17 @@ export default function ComoAplicarPage() {
           </div>
         ))}
 
+        <h2 className="mb-3 mt-10 text-h3">Video: cómo mezclar los esmaltes</h2>
+        <div className="relative mb-8 aspect-video w-full overflow-hidden rounded-lg bg-surface-muted">
+          <iframe
+            src="https://www.youtube.com/embed/Gu6luGOo1vA"
+            title="Cómo mezclar los esmaltes SoloGlazes"
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+
         <h2 className="mb-3 mt-10 text-h3">Instrucciones de aplicación — Serie GRRR</h2>
         <ol className="list-decimal space-y-4 pl-5 text-body text-text-secondary">
           <li>

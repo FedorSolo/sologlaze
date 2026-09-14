@@ -98,8 +98,10 @@ export async function updateProductAction(
   const description = String(formData.get("description") ?? "").trim();
   const applicationInstructions = String(formData.get("applicationInstructions") ?? "").trim();
   const price = Number(formData.get("price"));
+  const compareAtPriceRaw = String(formData.get("compareAtPrice") ?? "").trim();
+  const compareAtPrice = compareAtPriceRaw ? Number(compareAtPriceRaw) : null;
   const isActive = formData.get("isActive") === "on";
-  const inStock = formData.get("inStock") === "on";
+  const stockQuantity = Math.max(0, Number(formData.get("stockQuantity") ?? 0));
   const images = parseImageUrls(formData);
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
 
@@ -116,11 +118,14 @@ export async function updateProductAction(
   // Actualiza precio/stock de la primera variante (esquema simple de 1 variante por producto en el admin).
   const variant = product.variants[0];
   if (variant) {
-    await prisma.productVariant.update({ where: { id: variant.id }, data: { price } });
+    await prisma.productVariant.update({
+      where: { id: variant.id },
+      data: { price, compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : null },
+    });
     await prisma.inventory.upsert({
       where: { variantId: variant.id },
-      update: { status: inStock ? "IN_STOCK" : "OUT_OF_STOCK" },
-      create: { variantId: variant.id, quantity: inStock ? 25 : 0, status: inStock ? "IN_STOCK" : "OUT_OF_STOCK" },
+      update: { quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+      create: { variantId: variant.id, quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
     });
   }
 

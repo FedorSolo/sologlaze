@@ -47,10 +47,10 @@ export function CatalogFilters({
                   <button
                     key={opt}
                     onClick={() => onToggle(group.key, opt)}
-                    className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+                    className={`rounded-full border px-3 py-1.5 text-sm transition-all duration-150 hover:scale-105 ${
                       isActive
                         ? "border-accent bg-accent-soft text-accent"
-                        : "border-border text-text-secondary hover:border-border-strong"
+                        : "border-border text-text-secondary hover:border-accent hover:text-accent"
                     }`}
                   >
                     {opt}

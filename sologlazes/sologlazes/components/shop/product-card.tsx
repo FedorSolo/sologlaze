@@ -12,6 +12,7 @@ export type ProductCardData = {
   collection: { slug: "cristalina" | "floating" | "grrr"; name: string };
   temperatureLabel: string;
   price: number;
+  compareAtPrice?: number;
   currency?: string;
   imageUrl: string;
   imageAltUrl?: string;
@@ -66,8 +67,13 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             <p className="text-small text-text-secondary">
               {product.temperatureLabel}
             </p>
-            <p className="mt-1 text-body-lg">
-              $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
+            <p className="mt-1 flex items-baseline gap-2 text-body-lg">
+              <span>$ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}</span>
+              {product.compareAtPrice && (
+                <span className="text-sm text-text-secondary line-through">
+                  $ {product.compareAtPrice.toLocaleString("es-AR")}
+                </span>
+              )}
             </p>
           </div>
           <button

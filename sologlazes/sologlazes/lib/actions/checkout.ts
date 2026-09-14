@@ -91,6 +91,14 @@ export async function createOrderAction(input: CheckoutInput) {
       orderId: order.orderNumber,
       customerName: input.name,
       total,
+      items: orderItemsData.map((i) => ({
+        name: i.productNameSnapshot,
+        variantLabel: i.variantLabelSnapshot ?? undefined,
+        quantity: i.quantity,
+        price: Number(i.unitPriceSnapshot),
+      })),
+      address: { street: input.street, city: input.city, province: input.province, postalCode: input.postalCode },
+      shippingLabel: input.shippingLabel,
     });
     await prisma.emailLog.create({
       data: { orderId: order.id, type: "ORDER_CONFIRMATION", recipient: input.email, status: "SENT" },

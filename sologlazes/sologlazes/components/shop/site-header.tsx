@@ -6,17 +6,21 @@ import { useState } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { Search, Heart, User, ShoppingBag, Menu, X, LogOut } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
+import { useLang } from "@/lib/i18n";
+import { LanguageSwitcher } from "@/components/shop/language-switcher";
 
 const collections = [
   { slug: "cristalina", name: "Cristalina" },
   { slug: "floating", name: "Floating" },
   { slug: "grrr", name: "GRRR" },
+  { slug: "pack-prueba", name: "Pack Prueba" },
 ];
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { count } = useCart();
   const { data: session, status } = useSession();
+  const { t } = useLang();
 
   return (
     <header className="sticky top-0 z-50 border-b border-transparent bg-bg/80 backdrop-blur transition-colors">
@@ -43,14 +47,14 @@ export function SiteHeader() {
 
         <nav className="hidden lg:flex items-center gap-8 text-sm">
           <div className="group relative">
-            <button className="hover:text-accent transition-colors">Catálogo</button>
+            <Link href="/catalogo" className="hover:text-accent transition-colors">{t("catalogo")}</Link>
             <div className="absolute left-0 top-full hidden pt-4 group-hover:block">
               <div className="flex gap-2 rounded-lg bg-surface p-3 shadow-lg">
                 {collections.map((c) => (
                   <Link
                     key={c.slug}
                     href={`/catalogo/${c.slug}`}
-                    className="rounded-md px-4 py-2 text-sm hover:bg-surface-muted whitespace-nowrap"
+                    className="rounded-md px-4 py-2 text-sm whitespace-nowrap transition-all duration-150 hover:scale-105 hover:bg-surface-muted hover:text-accent"
                   >
                     {c.name}
                   </Link>
@@ -58,12 +62,15 @@ export function SiteHeader() {
               </div>
             </div>
           </div>
-          <Link href="/guia" className="hover:text-accent transition-colors">Guía</Link>
-          <Link href="/nosotros" className="hover:text-accent transition-colors">Nosotros</Link>
-          <Link href="/esmaltes-para-gres" className="hover:text-accent transition-colors">Esmaltes para GRES</Link>
+          <Link href="/guia" className="hover:text-accent transition-colors">{t("guia")}</Link>
+          <Link href="/nosotros" className="hover:text-accent transition-colors">{t("nosotros")}</Link>
+          <Link href="/esmaltes-para-gres" className="hover:text-accent transition-colors">{t("gres")}</Link>
         </nav>
 
         <div className="flex items-center gap-1">
+          <div className="hidden sm:mr-2 sm:flex">
+            <LanguageSwitcher />
+          </div>
           <IconButton href="/buscar" label="Buscar"><Search size={18} /></IconButton>
           <IconButton href="/cuenta/favoritos" label="Favoritos" className="hidden sm:inline-flex"><Heart size={18} /></IconButton>
           {status === "authenticated" ? (
@@ -114,9 +121,9 @@ export function SiteHeader() {
                 {c.name}
               </Link>
             ))}
-            <Link href="/guia" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Guía</Link>
-            <Link href="/nosotros" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Nosotros</Link>
-            <Link href="/esmaltes-para-gres" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Esmaltes para GRES</Link>
+            <Link href="/guia" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>{t("guia")}</Link>
+            <Link href="/nosotros" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>{t("nosotros")}</Link>
+            <Link href="/esmaltes-para-gres" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>{t("gres")}</Link>
             <Link href="/cuenta" className="py-3 border-b border-border" onClick={() => setMenuOpen(false)}>Cuenta</Link>
             <Link href="/contacto" className="py-3" onClick={() => setMenuOpen(false)}>Contacto</Link>
           </nav>

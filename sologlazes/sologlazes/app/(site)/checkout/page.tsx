@@ -5,22 +5,37 @@ import { useRef, useState } from "react";
 import { useCart } from "@/lib/cart-context";
 import { createOrderAction } from "@/lib/actions/checkout";
 
-const SHIPPING_OPTIONS = [
-  { id: "mensajeria_caba", label: "Mensajería propia en CABA (desde 2kg)", price: 10000 },
-  { id: "andreani", label: "Andreani (a todo el país)", price: 15000 },
-  { id: "correo_argentino", label: "Correo Argentino (a todo el país)", price: 15000 },
-];
+const FREE_CABA_THRESHOLD_KG = 3;
+
+function getShippingOptions(totalWeightKg: number) {
+  const cabaFree = totalWeightKg >= FREE_CABA_THRESHOLD_KG;
+  return [
+    {
+      id: "caba_moto",
+      label: cabaFree ? "CABA — moto/Uber (envío gratis, pedido +3kg)" : "CABA — moto/Uber (a coordinar según distancia)",
+      price: cabaFree ? 0 : 0, // el costo real por distancia se coordina aparte cuando no es gratis
+      note: cabaFree ? undefined : "Envío CABA a coordinar según distancia — no incluido en este total.",
+    },
+    {
+      id: "correo_andreani",
+      label: "Resto del país — Correo Argentino / Andreani (a coordinar y pagar aparte)",
+      price: 0,
+      note: "Envío al interior a coordinar y pagar aparte — no incluido en este total.",
+    },
+  ];
+}
 
 export default function CheckoutPage() {
-  const { lines, subtotal, clear } = useCart();
+  const { lines, subtotal, totalWeightKg, clear } = useCart();
   const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
-  const [shipping, setShipping] = useState(SHIPPING_OPTIONS[0].id);
+  const shippingOptions = getShippingOptions(totalWeightKg);
+  const [shipping, setShipping] = useState(shippingOptions[0].id);
   const [payment, setPayment] = useState<"MERCADO_PAGO" | "MANUAL" | "EFECTIVO">("MERCADO_PAGO");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const shippingOption = SHIPPING_OPTIONS.find((s) => s.id === shipping)!;
+  const shippingOption = shippingOptions.find((s) => s.id === shipping)!;
   const total = subtotal + shippingOption.price;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,6 +55,7 @@ export default function CheckoutPage() {
         province: String(formData.get("province")),
         comment: [
           payment === "EFECTIVO" ? "Pago: Efectivo (retiro en el taller o contra entrega en CABA)." : "",
+          shippingOption.note ?? "",
           String(formData.get("comment") ?? ""),
         ].filter(Boolean).join(" ") || undefined,
         shippingLabel: shippingOption.label,
@@ -93,9 +109,14 @@ export default function CheckoutPage() {
           </section>
 
           <section>
-            <h2 className="mb-4 text-h3">Método de envío</h2>
+            <h2 className="mb-1 text-h3">Método de envío</h2>
+            <p className="mb-4 text-xs text-text-secondary">
+              Peso total del pedido: {totalWeightKg.toFixed(2)} kg
+              {totalWeightKg < FREE_CABA_THRESHOLD_KG &&
+                ` (envío CABA gratis desde ${FREE_CABA_THRESHOLD_KG}kg)`}
+            </p>
             <div className="space-y-2">
-              {SHIPPING_OPTIONS.map((opt) => (
+              {shippingOptions.map((opt) => (
                 <label
                   key={opt.id}
                   className={`flex cursor-pointer items-center justify-between rounded-md border px-4 py-3 text-sm ${
@@ -111,7 +132,9 @@ export default function CheckoutPage() {
                     />
                     {opt.label}
                   </span>
-                  <span className="font-medium">$ {opt.price.toLocaleString("es-AR")}</span>
+                  <span className="font-medium">
+                    {opt.note ? "A coordinar" : opt.price === 0 ? "Gratis" : `$ ${opt.price.toLocaleString("es-AR")}`}
+                  </span>
                 </label>
               ))}
             </div>
@@ -175,12 +198,19 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-text-secondary">Envío</span>
-              <span>$ {shippingOption.price.toLocaleString("es-AR")}</span>
+              <span>
+                {shippingOption.note ? "A coordinar" : shippingOption.price === 0 ? "Gratis" : `$ ${shippingOption.price.toLocaleString("es-AR")}`}
+              </span>
             </div>
             <div className="flex justify-between border-t border-border pt-2 text-base font-medium">
               <span>Total</span>
               <span>$ {total.toLocaleString("es-AR")} ARS</span>
             </div>
+            {shippingOption.note && (
+              <p className="text-xs text-text-secondary">
+                El costo de envío se coordina por WhatsApp después de confirmar el pedido — no está incluido en este total.
+              </p>
+            )}
           </div>
           {error && <p className="mt-3 text-sm text-status-error">{error}</p>}
           <button
