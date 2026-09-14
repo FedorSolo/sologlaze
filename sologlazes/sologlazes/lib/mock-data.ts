@@ -8,13 +8,15 @@ export type ProductDetail = {
   name: string;
   collection: { slug: "cristalina" | "floating" | "grrr"; name: string };
   price: number;
+  compareAtPrice?: number;
   currency: string;
   shortDescription: string;
   description: string;
   applicationInstructions: string;
   inStock: boolean;
+  stockQuantity?: number;
   attributes: { label: string; value: string }[];
-  variants?: { id: string; label: string; price: number }[];
+  variants?: { id: string; label: string; price: number; compareAtPrice?: number }[];
   images: { url: string; alt: string; type: "ON_PIECE" | "TEXTURE_DETAIL" | "PACKAGING" }[];
   videoUrl?: string;
   reviews: { id: string; author: string; rating: number; comment: string; imageUrl?: string }[];
