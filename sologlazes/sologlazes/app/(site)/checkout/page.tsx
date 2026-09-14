@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
+import { Truck, Wallet, Banknote, Landmark } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { createOrderAction } from "@/lib/actions/checkout";
 
@@ -12,18 +13,26 @@ function getShippingOptions(totalWeightKg: number) {
   return [
     {
       id: "caba_moto",
-      label: cabaFree ? "CABA — moto/Uber (envío gratis, pedido +3kg)" : "CABA — moto/Uber (a coordinar según distancia)",
-      price: cabaFree ? 0 : 0, // el costo real por distancia se coordina aparte cuando no es gratis
+      label: "CABA — moto/Uber",
+      detail: cabaFree ? `Gratis a partir de ${FREE_CABA_THRESHOLD_KG}kg` : "Costo a coordinar según distancia",
+      price: 0,
       note: cabaFree ? undefined : "Envío CABA a coordinar según distancia — no incluido en este total.",
     },
     {
       id: "correo_andreani",
-      label: "Resto del país — Correo Argentino / Andreani (a coordinar y pagar aparte)",
+      label: "Resto del país",
+      detail: "Correo Argentino o Andreani — a coordinar y pagar aparte",
       price: 0,
       note: "Envío al interior a coordinar y pagar aparte — no incluido en este total.",
     },
   ];
 }
+
+const paymentOptions = [
+  { id: "MERCADO_PAGO" as const, label: "Mercado Pago", detail: "Tarjeta, débito o dinero en cuenta", icon: Wallet },
+  { id: "MANUAL" as const, label: "Transferencia bancaria", detail: "Te pasamos el CBU al confirmar", icon: Landmark },
+  { id: "EFECTIVO" as const, label: "Efectivo", detail: "Retiro en el taller o contra entrega en CABA", icon: Banknote },
+];
 
 export default function CheckoutPage() {
   const { lines, subtotal, totalWeightKg, clear } = useCart();
@@ -58,7 +67,7 @@ export default function CheckoutPage() {
           shippingOption.note ?? "",
           String(formData.get("comment") ?? ""),
         ].filter(Boolean).join(" ") || undefined,
-        shippingLabel: shippingOption.label,
+        shippingLabel: `${shippingOption.label} — ${shippingOption.detail}`,
         shippingCost: shippingOption.price,
         paymentProvider: payment === "MERCADO_PAGO" ? "MERCADO_PAGO" : "MANUAL",
         lines: lines.map((l) => ({ slug: l.slug, quantity: l.quantity })),
@@ -88,9 +97,8 @@ export default function CheckoutPage() {
       <h1 className="mb-8 text-h1 lg:text-h1-lg">Finalizar compra</h1>
 
       <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-10">
-          <section>
-            <h2 className="mb-4 text-h3">Datos de contacto y envío</h2>
+        <div className="space-y-8">
+          <Step number={1} title="Tus datos">
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Nombre y apellido" name="name" required />
               <Field label="Email" name="email" type="email" required />
@@ -100,92 +108,56 @@ export default function CheckoutPage() {
               <Field label="Código postal" name="postalCode" required />
               <Field label="Provincia" name="province" required />
             </div>
-          </section>
+          </Step>
 
-          <section>
-            <h2 className="mb-4 text-h3">Comentario del pedido</h2>
+          <Step number={2} title="Cómo lo recibís">
+            <p className="mb-3 flex items-center gap-1.5 text-xs text-text-secondary">
+              <Truck size={14} /> Peso total del pedido: {totalWeightKg.toFixed(2)} kg
+            </p>
+            <div className="space-y-2">
+              {shippingOptions.map((opt) => (
+                <OptionRow
+                  key={opt.id}
+                  selected={shipping === opt.id}
+                  onSelect={() => setShipping(opt.id)}
+                  title={opt.label}
+                  detail={opt.detail}
+                  right={opt.note ? "A coordinar" : "Gratis"}
+                  inputName="shippingOption"
+                />
+              ))}
+            </div>
+          </Step>
+
+          <Step number={3} title="Cómo pagás">
+            <div className="space-y-2">
+              {paymentOptions.map((opt) => (
+                <OptionRow
+                  key={opt.id}
+                  selected={payment === opt.id}
+                  onSelect={() => setPayment(opt.id)}
+                  title={opt.label}
+                  detail={opt.detail}
+                  icon={opt.icon}
+                  inputName="paymentOption"
+                />
+              ))}
+            </div>
+          </Step>
+
+          <Step number={4} title="Comentario" optional>
             <textarea
               name="comment"
               rows={3}
               placeholder="Opcional — por ejemplo, si es para un taller"
-              className="w-full rounded-sm border border-border p-3 text-sm"
+              className="w-full rounded-sm border border-border p-3 text-sm focus:border-accent"
             />
-          </section>
-
-          <section>
-            <h2 className="mb-1 text-h3">Método de envío</h2>
-            <p className="mb-4 text-xs text-text-secondary">
-              Peso total del pedido: {totalWeightKg.toFixed(2)} kg
-              {totalWeightKg < FREE_CABA_THRESHOLD_KG &&
-                ` (envío CABA gratis desde ${FREE_CABA_THRESHOLD_KG}kg)`}
-            </p>
-            <div className="space-y-2">
-              {shippingOptions.map((opt) => (
-                <label
-                  key={opt.id}
-                  className={`flex cursor-pointer items-center justify-between rounded-md border px-4 py-3 text-sm ${
-                    shipping === opt.id ? "border-accent bg-accent-soft" : "border-border"
-                  }`}
-                >
-                  <span className="flex items-center gap-3">
-                    <input
-                      type="radio"
-                      name="shippingOption"
-                      checked={shipping === opt.id}
-                      onChange={() => setShipping(opt.id)}
-                    />
-                    {opt.label}
-                  </span>
-                  <span className="font-medium">
-                    {opt.note ? "A coordinar" : opt.price === 0 ? "Gratis" : `$ ${opt.price.toLocaleString("es-AR")}`}
-                  </span>
-                </label>
-              ))}
-            </div>
-          </section>
-
-          <section>
-            <h2 className="mb-4 text-h3">Pago</h2>
-            <div className="space-y-2">
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-sm ${
-                  payment === "MERCADO_PAGO" ? "border-accent bg-accent-soft" : "border-border"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentOption"
-                  checked={payment === "MERCADO_PAGO"}
-                  onChange={() => setPayment("MERCADO_PAGO")}
-                />
-                Mercado Pago
-              </label>
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-sm ${
-                  payment === "MANUAL" ? "border-accent bg-accent-soft" : "border-border"
-                }`}
-              >
-                <input type="radio" name="paymentOption" checked={payment === "MANUAL"} onChange={() => setPayment("MANUAL")} />
-                Transferencia bancaria
-              </label>
-              <label
-                className={`flex cursor-pointer items-center gap-3 rounded-md border px-4 py-3 text-sm ${
-                  payment === "EFECTIVO" ? "border-accent bg-accent-soft" : "border-border"
-                }`}
-              >
-                <input type="radio" name="paymentOption" checked={payment === "EFECTIVO"} onChange={() => setPayment("EFECTIVO")} />
-                Efectivo (retiro en el taller o contra entrega en CABA)
-              </label>
-            </div>
-            <p className="mt-2 text-xs text-text-secondary">
-              La integración con claves reales de Mercado Pago se conecta en el deploy (ver PRD, fuera de alcance v1).
-            </p>
-          </section>
+          </Step>
         </div>
 
-        <aside className="h-fit rounded-lg border border-border bg-surface p-6">
-          <h2 className="mb-4 text-h3">Resumen</h2>
-          <div className="mb-4 space-y-2">
+        <aside className="h-fit space-y-4 rounded-lg border border-border bg-surface p-6 lg:sticky lg:top-6">
+          <h2 className="text-h3">Resumen</h2>
+          <div className="space-y-2">
             {lines.map((l) => (
               <div key={l.slug} className="flex justify-between text-sm">
                 <span className="text-text-secondary">
@@ -202,9 +174,7 @@ export default function CheckoutPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-text-secondary">Envío</span>
-              <span>
-                {shippingOption.note ? "A coordinar" : shippingOption.price === 0 ? "Gratis" : `$ ${shippingOption.price.toLocaleString("es-AR")}`}
-              </span>
+              <span>{shippingOption.note ? "A coordinar" : "Gratis"}</span>
             </div>
             <div className="flex justify-between border-t border-border pt-2 text-base font-medium">
               <span>Total</span>
@@ -216,17 +186,78 @@ export default function CheckoutPage() {
               </p>
             )}
           </div>
-          {error && <p className="mt-3 text-sm text-status-error">{error}</p>}
+          {error && <p className="text-sm text-status-error">{error}</p>}
           <button
             type="submit"
             disabled={submitting}
-            className="mt-6 w-full rounded-full bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
+            className="w-full rounded-full bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
           >
             {submitting ? "Procesando..." : "Confirmar pedido"}
           </button>
         </aside>
       </div>
     </form>
+  );
+}
+
+function Step({
+  number,
+  title,
+  optional,
+  children,
+}: {
+  number: number;
+  title: string;
+  optional?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <section>
+      <h2 className="mb-4 flex items-center gap-2.5 text-h3">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-text-primary text-xs font-medium text-bg">
+          {number}
+        </span>
+        {title}
+        {optional && <span className="text-xs font-normal text-text-secondary">(opcional)</span>}
+      </h2>
+      {children}
+    </section>
+  );
+}
+
+function OptionRow({
+  selected,
+  onSelect,
+  title,
+  detail,
+  right,
+  icon: Icon,
+  inputName,
+}: {
+  selected: boolean;
+  onSelect: () => void;
+  title: string;
+  detail: string;
+  right?: string;
+  icon?: React.ComponentType<{ size?: number }>;
+  inputName: string;
+}) {
+  return (
+    <label
+      className={`flex cursor-pointer items-center justify-between gap-3 rounded-md border px-4 py-3 text-sm transition-colors ${
+        selected ? "border-accent bg-accent-soft" : "border-border hover:border-accent"
+      }`}
+    >
+      <span className="flex items-center gap-3">
+        <input type="radio" name={inputName} checked={selected} onChange={onSelect} />
+        {Icon && <Icon size={16} />}
+        <span>
+          <span className="block">{title}</span>
+          <span className="block text-xs text-text-secondary">{detail}</span>
+        </span>
+      </span>
+      {right && <span className="shrink-0 whitespace-nowrap text-xs font-medium text-text-secondary">{right}</span>}
+    </label>
   );
 }
 

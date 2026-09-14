@@ -15,18 +15,37 @@ const interTight = Inter_Tight({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://sologlazes.com.ar"),
   title: {
     default: "SoloGlazes — Esmaltes cerámicos listos para usar",
     template: "%s · SoloGlazes",
   },
   description:
     "Esmaltes cerámicos para cono 5–6 (1200°C), listos para aplicar. Cristalina, Floating y GRRR — el efecto que buscás en tu pieza, sin tamizar ni mezclar.",
+  openGraph: {
+    siteName: "SoloGlazes",
+    type: "website",
+    locale: "es_AR",
+    url: "https://sologlazes.com.ar",
+  },
+  twitter: { card: "summary_large_image" },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "SoloGlazes",
+  url: "https://sologlazes.com.ar",
+  logo: "https://sologlazes.com.ar/images/logo-solo.png",
+  areaServed: "AR",
+  sameAs: ["https://instagram.com", "https://wa.me/5491127379589"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="es" className={interTight.variable}>
       <body>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <LangProvider>
           <AuthSessionProvider>
             <CartProvider>
