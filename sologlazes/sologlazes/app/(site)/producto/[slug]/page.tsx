@@ -13,12 +13,33 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const product = await getProductDetail(slug);
   if (!product) return {};
+  const seoDescription =
+    product.description && product.description.length > product.shortDescription.length
+      ? product.description.slice(0, 160)
+      : product.shortDescription;
   return {
-    title: product.name,
-    description: product.shortDescription,
+    title: `${product.name} — Esmalte cerámico ${product.collection.name}`,
+    description: seoDescription,
+    keywords: [
+      product.name,
+      `esmalte ${product.collection.name}`,
+      "esmalte cerámico",
+      "esmalte para gres",
+      "cerámica cono 5-6",
+      "SoloGlazes",
+    ],
+    alternates: { canonical: `https://sologlazes.com.ar/producto/${product.slug}` },
     openGraph: {
       title: product.name,
-      description: product.shortDescription,
+      description: seoDescription,
+      images: product.images[0] ? [product.images[0].url] : undefined,
+      type: "website",
+      url: `https://sologlazes.com.ar/producto/${product.slug}`,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description: seoDescription,
       images: product.images[0] ? [product.images[0].url] : undefined,
     },
   };
@@ -68,9 +89,26 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
         : undefined,
   };
 
+  const breadcrumbLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Inicio", item: "https://sologlazes.com.ar" },
+      { "@type": "ListItem", position: 2, name: "Catálogo", item: "https://sologlazes.com.ar/catalogo" },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: product.collection.name,
+        item: `https://sologlazes.com.ar/catalogo/${product.collection.slug}`,
+      },
+      { "@type": "ListItem", position: 4, name: product.name, item: `https://sologlazes.com.ar/producto/${product.slug}` },
+    ],
+  };
+
   return (
     <div className="container py-10 lg:py-14">
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
 
       <nav aria-label="Breadcrumb" className="mb-6 text-sm text-text-secondary">
         <Link href="/">Inicio</Link> / <Link href="/catalogo">Catálogo</Link> /{" "}

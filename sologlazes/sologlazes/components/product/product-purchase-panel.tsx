@@ -163,6 +163,17 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       <details className="border-t border-b border-border py-4">
         <summary className="cursor-pointer text-sm font-medium">Instrucciones de aplicación</summary>
         <p className="mt-3 text-sm text-text-secondary">{product.applicationInstructions}</p>
+
+        <p className="mb-2 mt-4 text-xs font-medium text-text-secondary">Video: cómo mezclar los esmaltes</p>
+        <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface-muted">
+          <iframe
+            src="https://www.youtube.com/embed/Gu6luGOo1vA"
+            title="Cómo mezclar los esmaltes SoloGlazes"
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
       </details>
     </div>
   );
