@@ -3,6 +3,8 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/send";
+import { mpClient } from "@/lib/mercadopago";
+import { Preference } from "mercadopago";
 
 export type CheckoutInput = {
   name: string;
@@ -121,5 +123,39 @@ export async function createOrderAction(input: CheckoutInput) {
     // No bloqueamos el checkout si falla la notificación al admin
   }
 
-  return { orderNumber: order.orderNumber };
+  let mpCheckoutUrl: string | undefined;
+  if (input.paymentProvider === "MERCADO_PAGO" && process.env.MERCADOPAGO_ACCESS_TOKEN) {
+    try {
+      const preference = new Preference(mpClient);
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://sologlazes.com.ar";
+      const result = await preference.create({
+        body: {
+          items: orderItemsData.map((i) => ({
+            id: i.variantId,
+            title: `${i.productNameSnapshot} (${i.variantLabelSnapshot ?? ""})`,
+            quantity: i.quantity,
+            unit_price: Number(i.unitPriceSnapshot),
+            currency_id: "ARS",
+          })),
+          shipments: input.shippingCost > 0 ? { cost: input.shippingCost, mode: "not_specified" } : undefined,
+          external_reference: order.id,
+          back_urls: {
+            success: `${baseUrl}/checkout/confirmacion/${order.id}`,
+            pending: `${baseUrl}/checkout/confirmacion/${order.id}`,
+            failure: `${baseUrl}/checkout/confirmacion/${order.id}`,
+          },
+          auto_return: "approved",
+          notification_url: `${baseUrl}/api/webhooks/mercadopago`,
+          payer: { name: input.name, email: input.email },
+        },
+      });
+      mpCheckoutUrl = result.init_point ?? undefined;
+    } catch (err) {
+      // Si falla la creación de la preferencia, el pedido queda igual creado (PENDING) —
+      // el cliente puede coordinar el pago por WhatsApp como respaldo.
+      console.error("Error creando preferencia de Mercado Pago:", err);
+    }
+  }
+
+  return { orderNumber: order.orderNumber, orderId: order.id, mpCheckoutUrl };
 }
