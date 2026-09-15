@@ -33,16 +33,15 @@ export function SiteHeader() {
           <Menu size={22} />
         </button>
 
-        <Link href="/" className="flex items-center gap-1.5" aria-label="SoloGlazes — inicio">
+        <Link href="/" className="flex items-center" aria-label="SoloGlazes — inicio">
           <Image
-            src="/images/logo-solo.png"
-            alt="Solo"
-            width={92}
-            height={58}
+            src="/images/logo-sologlazes.png"
+            alt="SoloGlazes"
+            width={220}
+            height={62}
             className="h-9 w-auto lg:h-11"
             priority
           />
-          <span className="font-display text-lg font-semibold italic tracking-tight text-brand-gold lg:text-xl">Glazes</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-sm">
