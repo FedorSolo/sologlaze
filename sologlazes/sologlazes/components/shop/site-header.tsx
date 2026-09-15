@@ -42,7 +42,7 @@ export function SiteHeader() {
             className="h-9 w-auto lg:h-11"
             priority
           />
-          <span className="font-sans text-sm font-medium text-text-secondary lg:text-base">Glazes</span>
+          <span className="font-display text-lg font-semibold italic tracking-tight text-brand-gold lg:text-xl">Glazes</span>
         </Link>
 
         <nav className="hidden lg:flex items-center gap-8 text-sm">
