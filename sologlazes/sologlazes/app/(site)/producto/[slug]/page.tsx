@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { ProductGallery } from "@/components/product/product-gallery";
 import { ProductPurchasePanel } from "@/components/product/product-purchase-panel";
 import { ProductReviews } from "@/components/product/product-reviews";
+import { ReviewForm } from "@/components/product/review-form";
 import { ProductCard } from "@/components/shop/product-card";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -123,6 +124,9 @@ export default async function ProductPage({ params }: { params: Promise<{ slug: 
       <section className="mx-auto mt-16 max-w-2xl border-t border-border pt-10 lg:mt-24">
         <h2 className="mb-6 text-h2">Reseñas</h2>
         <ProductReviews reviews={product.reviews} />
+        <div className="mt-6">
+          <ReviewForm productSlug={product.slug} />
+        </div>
       </section>
 
       {related.length > 0 && (

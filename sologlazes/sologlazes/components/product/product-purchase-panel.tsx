@@ -57,12 +57,12 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       <h1 className="mb-2 text-h1 lg:text-h1-lg">{product.name}</h1>
       <p className="mb-4 text-body-lg text-text-primary/80">{product.shortDescription}</p>
 
-      <div className="mb-4 flex flex-wrap gap-4 text-xs text-text-secondary">
-        <span className="flex items-center gap-1.5">
-          <Utensils size={15} /> Apto para vajilla y alimentos
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
+          <Utensils size={14} /> Apto para vajilla y alimentos
         </span>
-        <span className="flex items-center gap-1.5">
-          <WashingMachine size={15} /> Apto lavavajillas
+        <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
+          <WashingMachine size={14} /> Apto lavavajillas
         </span>
       </div>
       <p className="mb-6 flex items-baseline gap-3 text-h2">

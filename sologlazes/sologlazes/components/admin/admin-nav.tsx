@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Star, Image as ImageIcon, Upload, BarChart3 } from "lucide-react";
+import { signOut } from "next-auth/react";
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Star, Image as ImageIcon, Upload, BarChart3, LogOut } from "lucide-react";
 
 const items = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
@@ -36,6 +37,13 @@ export function AdminNav() {
           </Link>
         );
       })}
+
+      <button
+        onClick={() => signOut({ callbackUrl: "/" })}
+        className="mt-auto flex items-center gap-2 rounded-md px-3 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-muted"
+      >
+        <LogOut size={16} /> Cerrar sesión
+      </button>
     </nav>
   );
 }
