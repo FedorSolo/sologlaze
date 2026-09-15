@@ -148,3 +148,29 @@ export async function updateProductAction(
   revalidatePath(`/producto/${product.slug}`);
   return { success: true };
 }
+
+// Edición rápida desde la tabla de /admin/productos — solo precio y stock, sin abrir el formulario completo.
+export async function quickUpdatePriceStock(productId: string, price: number, stockQuantity: number) {
+  if (!Number.isFinite(price) || price <= 0) throw new Error("Precio inválido");
+  if (!Number.isFinite(stockQuantity) || stockQuantity < 0) throw new Error("Stock inválido");
+
+  const product = await prisma.product.findUnique({
+    where: { id: productId },
+    include: { variants: { include: { inventory: true } } },
+  });
+  if (!product) throw new Error("Producto no encontrado");
+
+  const variant = product.variants[0];
+  if (variant) {
+    await prisma.productVariant.update({ where: { id: variant.id }, data: { price } });
+    await prisma.inventory.upsert({
+      where: { variantId: variant.id },
+      update: { quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+      create: { variantId: variant.id, quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+    });
+  }
+
+  revalidatePath("/admin/productos");
+  revalidatePath("/catalogo");
+  revalidatePath(`/producto/${product.slug}`);
+}

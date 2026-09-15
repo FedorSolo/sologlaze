@@ -24,6 +24,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
   const compareAtPrice = product.variants[0]?.compareAtPrice;
 
   return {
+    id: product.id,
     slug: product.slug,
     name: product.name,
     collection: product.collection as { slug: "cristalina" | "floating" | "grrr"; name: string },
@@ -36,6 +37,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
     imageAltUrl: product.images[1]?.url,
     imageAlt: product.images[0]?.alt ?? product.name,
     inStock: inventory ? inventory.status !== "OUT_OF_STOCK" : true,
+    stockQuantity: inventory?.quantity,
   };
 }
 

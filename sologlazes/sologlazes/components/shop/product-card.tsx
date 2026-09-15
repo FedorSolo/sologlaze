@@ -7,6 +7,7 @@ import { Heart, Plus } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 
 export type ProductCardData = {
+  id: string;
   slug: string;
   name: string;
   collection: { slug: "cristalina" | "floating" | "grrr"; name: string };
@@ -18,6 +19,7 @@ export type ProductCardData = {
   imageAltUrl?: string;
   imageAlt: string;
   inStock: boolean;
+  stockQuantity?: number;
 };
 
 const collectionColor: Record<string, string> = {
