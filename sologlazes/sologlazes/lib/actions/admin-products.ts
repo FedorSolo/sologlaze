@@ -160,10 +160,8 @@ export async function updateProductAction(
   return { success: true };
 }
 
-<<<<<<< HEAD
 // Edición rápida desde la tabla de /admin/productos — un peso a la vez, sin abrir el formulario completo.
-=======
->>>>>>> e8af46dd73ea17eff775b21834f716bcb7d1437a
+export async function quickUpdatePriceStock(variantId: string, price: number, stockQuantity: number) { e8af46dd73ea17eff775b21834f716bcb7d1437a
 export async function quickUpdatePriceStock(variantId: string, price: number, stockQuantity: number) {
   if (!Number.isFinite(price) || price <= 0) throw new Error("Precio inválido");
   if (!Number.isFinite(stockQuantity) || stockQuantity < 0) throw new Error("Stock inválido");
