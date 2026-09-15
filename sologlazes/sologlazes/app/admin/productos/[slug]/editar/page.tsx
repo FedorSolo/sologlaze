@@ -20,8 +20,6 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
 
   if (!product) notFound();
 
-  const variant = product.variants[0];
-
   return (
     <div className="max-w-xl">
       <h1 className="mb-6 text-h1">Editar: {product.name}</h1>
@@ -34,10 +32,14 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
           shortDescription: product.shortDescription,
           description: product.description,
           applicationInstructions: product.applicationInstructions,
-          price: Number(variant?.price ?? product.basePrice),
-          compareAtPrice: variant?.compareAtPrice ? Number(variant.compareAtPrice) : undefined,
           isActive: product.isActive,
-          stockQuantity: variant?.inventory?.quantity ?? 0,
+          variants: product.variants.map((v) => ({
+            id: v.id,
+            label: v.label,
+            price: Number(v.price),
+            compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+            stockQuantity: v.inventory?.quantity ?? 0,
+          })),
           imageUrls: product.images.map((img) => img.url),
           videoUrl: product.videos[0]?.url,
         }}
