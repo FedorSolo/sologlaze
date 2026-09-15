@@ -158,3 +158,5 @@ export async function updateProductAction(
 
   revalidatePath("/admin/productos");
   revalidatePath("/catalogo");
+  revalidatePath(`/producto/${variant.product.slug}`);
+}
