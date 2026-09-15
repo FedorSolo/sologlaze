@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useState } from "react";
-import { PlayCircle } from "lucide-react";
+import { PlayCircle, ZoomIn, X } from "lucide-react";
 import type { ProductDetail } from "@/lib/mock-data";
 
 export function ProductGallery({ product }: { product: ProductDetail }) {
@@ -11,6 +11,7 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
     ...(product.videoUrl ? [{ kind: "video" as const, url: product.videoUrl, alt: `Video de ${product.name}` }] : []),
   ];
   const [activeIndex, setActiveIndex] = useState(0);
+  const [zoomOpen, setZoomOpen] = useState(false);
   const active = media[activeIndex];
 
   return (
@@ -39,11 +40,24 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
 
       {/* Main media */}
       <div className="relative flex-1">
-        <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-surface-muted">
+        <div className="group relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-surface-muted">
           {active.kind === "video" ? (
             <video src={active.url} controls className="h-full w-full object-cover" aria-label={active.alt} />
           ) : (
-            <Image src={active.url} alt={active.alt} fill priority className="object-cover" />
+            <>
+              <button
+                type="button"
+                onClick={() => setZoomOpen(true)}
+                className="absolute inset-0 z-10 cursor-zoom-in"
+                aria-label="Ampliar foto"
+              >
+                <span className="sr-only">Ampliar foto</span>
+              </button>
+              <Image src={active.url} alt={active.alt} fill priority className="object-cover transition-transform duration-300 group-hover:scale-105" />
+              <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-xs text-text-primary opacity-0 transition-opacity group-hover:opacity-100">
+                <ZoomIn size={14} /> Ampliar
+              </span>
+            </>
           )}
         </div>
 
@@ -61,6 +75,26 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
           ))}
         </div>
       </div>
+
+      {/* Lightbox — foto ampliada a pantalla completa */}
+      {zoomOpen && active.kind === "image" && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-4"
+          onClick={() => setZoomOpen(false)}
+        >
+          <button
+            type="button"
+            aria-label="Cerrar"
+            onClick={() => setZoomOpen(false)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20"
+          >
+            <X size={20} />
+          </button>
+          <div className="relative h-full max-h-[90vh] w-full max-w-3xl">
+            <Image src={active.url} alt={active.alt} fill className="object-contain" />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

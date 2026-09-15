@@ -55,7 +55,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
     <div>
       <p className={`mb-1 text-h3 uppercase tracking-wide ${collectionTextColor[product.collection.slug] ?? "text-accent"}`}>{product.collection.name}</p>
       <h1 className="mb-2 text-h1 lg:text-h1-lg">{product.name}</h1>
-      <p className="mb-4 text-body-lg text-text-secondary">{product.shortDescription}</p>
+      <p className="mb-4 text-body-lg text-text-primary/80">{product.shortDescription}</p>
 
       <div className="mb-4 flex flex-wrap gap-4 text-xs text-text-secondary">
         <span className="flex items-center gap-1.5">
@@ -144,7 +144,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       {product.description && (
         <details className="mb-3 border-t border-border py-4" open>
           <summary className="cursor-pointer text-sm font-medium">Descripción</summary>
-          <p className="mt-3 whitespace-pre-line text-sm text-text-secondary">{product.description}</p>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-primary/80">{product.description}</p>
         </details>
       )}
 
@@ -162,9 +162,11 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
 
       <details className="border-t border-b border-border py-4">
         <summary className="cursor-pointer text-sm font-medium">Instrucciones de aplicación</summary>
-        <p className="mt-3 whitespace-pre-line text-sm text-text-secondary">{product.applicationInstructions}</p>
+        <div className="mt-3 whitespace-pre-line rounded-md bg-surface-muted p-4 text-sm leading-relaxed text-text-primary/80">
+          {product.applicationInstructions}
+        </div>
 
-        <p className="mb-2 mt-4 text-xs font-medium text-text-secondary">Video: cómo mezclar los esmaltes</p>
+        <p className="mb-2 mt-4 text-xs font-medium text-text-primary/70">Video: cómo mezclar los esmaltes</p>
         <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface-muted">
           <iframe
             src="https://www.youtube.com/embed/Gu6luGOo1vA"
