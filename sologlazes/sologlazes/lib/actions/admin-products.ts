@@ -97,35 +97,48 @@ export async function updateProductAction(
   const shortDescription = String(formData.get("shortDescription") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const applicationInstructions = String(formData.get("applicationInstructions") ?? "").trim();
-  const price = Number(formData.get("price"));
-  const compareAtPriceRaw = String(formData.get("compareAtPrice") ?? "").trim();
-  const compareAtPrice = compareAtPriceRaw ? Number(compareAtPriceRaw) : null;
   const isActive = formData.get("isActive") === "on";
-  const stockQuantity = Math.max(0, Number(formData.get("stockQuantity") ?? 0));
   const images = parseImageUrls(formData);
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
 
-  if (!name || !collectionId || !shortDescription || !description || !price || price <= 0) {
-    return { error: "Completá al menos nombre, serie, descripciones y un precio válido." };
+  const variantCount = Number(formData.get("variantCount") ?? 0);
+  const variantUpdates: { id: string; price: number; compareAtPrice: number | null; stockQuantity: number }[] = [];
+  for (let i = 0; i < variantCount; i++) {
+    const id = String(formData.get(`variantId_${i}`) ?? "");
+    const vPrice = Number(formData.get(`variantPrice_${i}`));
+    const vCompareRaw = String(formData.get(`variantCompareAtPrice_${i}`) ?? "").trim();
+    const vCompare = vCompareRaw ? Number(vCompareRaw) : null;
+    const vStock = Math.max(0, Number(formData.get(`variantStock_${i}`) ?? 0));
+    if (id && Number.isFinite(vPrice) && vPrice > 0) {
+      variantUpdates.push({
+        id,
+        price: vPrice,
+        compareAtPrice: vCompare && vCompare > vPrice ? vCompare : null,
+        stockQuantity: vStock,
+      });
+    }
   }
+
+  if (!name || !collectionId || !shortDescription || !description || variantUpdates.length === 0) {
+    return { error: "Completá al menos nombre, serie, descripciones y un precio válido por cada presentación." };
+  }
+
+  const basePrice = variantUpdates[0].price;
 
   const product = await prisma.product.update({
     where: { id: productId },
-    data: { name, collectionId, shortDescription, description, applicationInstructions, basePrice: price, isActive },
-    include: { variants: { include: { inventory: true } } },
+    data: { name, collectionId, shortDescription, description, applicationInstructions, basePrice, isActive },
   });
 
-  // Actualiza precio/stock de la primera variante (esquema simple de 1 variante por producto en el admin).
-  const variant = product.variants[0];
-  if (variant) {
+  for (const v of variantUpdates) {
     await prisma.productVariant.update({
-      where: { id: variant.id },
-      data: { price, compareAtPrice: compareAtPrice && compareAtPrice > price ? compareAtPrice : null },
+      where: { id: v.id },
+      data: { price: v.price, compareAtPrice: v.compareAtPrice },
     });
     await prisma.inventory.upsert({
-      where: { variantId: variant.id },
-      update: { quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
-      create: { variantId: variant.id, quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+      where: { variantId: v.id },
+      update: { quantity: v.stockQuantity, status: v.stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+      create: { variantId: v.id, quantity: v.stockQuantity, status: v.stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
     });
   }
 
@@ -145,32 +158,3 @@ export async function updateProductAction(
 
   revalidatePath("/admin/productos");
   revalidatePath("/catalogo");
-  revalidatePath(`/producto/${product.slug}`);
-  return { success: true };
-}
-
-// Edición rápida desde la tabla de /admin/productos — solo precio y stock, sin abrir el formulario completo.
-export async function quickUpdatePriceStock(productId: string, price: number, stockQuantity: number) {
-  if (!Number.isFinite(price) || price <= 0) throw new Error("Precio inválido");
-  if (!Number.isFinite(stockQuantity) || stockQuantity < 0) throw new Error("Stock inválido");
-
-  const product = await prisma.product.findUnique({
-    where: { id: productId },
-    include: { variants: { include: { inventory: true } } },
-  });
-  if (!product) throw new Error("Producto no encontrado");
-
-  const variant = product.variants[0];
-  if (variant) {
-    await prisma.productVariant.update({ where: { id: variant.id }, data: { price } });
-    await prisma.inventory.upsert({
-      where: { variantId: variant.id },
-      update: { quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
-      create: { variantId: variant.id, quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
-    });
-  }
-
-  revalidatePath("/admin/productos");
-  revalidatePath("/catalogo");
-  revalidatePath(`/producto/${product.slug}`);
-}
