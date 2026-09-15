@@ -5,23 +5,47 @@ import Link from "next/link";
 import { Check, Pencil } from "lucide-react";
 import { quickUpdatePriceStock } from "@/lib/actions/admin-products";
 
-type Props = {
+type Variant = {
   id: string;
-  slug: string;
-  name: string;
-  collectionName: string;
+  label: string;
   price: number;
-  stockQuantity?: number;
+  stockQuantity: number;
   inStock: boolean;
 };
 
-export function AdminProductRow({ id, slug, name, collectionName, price, stockQuantity, inStock }: Props) {
+type Props = {
+  slug: string;
+  name: string;
+  collectionName: string;
+  variants: Variant[];
+};
+
+export function AdminProductRow({ slug, name, collectionName, variants }: Props) {
+  const [selectedId, setSelectedId] = useState(variants[0]?.id);
+  const selected = variants.find((v) => v.id === selectedId) ?? variants[0];
+
   const [editing, setEditing] = useState(false);
-  const [priceValue, setPriceValue] = useState(String(price));
-  const [stockValue, setStockValue] = useState(String(stockQuantity ?? 0));
+  const [priceValue, setPriceValue] = useState(String(selected?.price ?? 0));
+  const [stockValue, setStockValue] = useState(String(selected?.stockQuantity ?? 0));
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+
+  if (!selected) return null;
+
+  const selectVariant = (id: string) => {
+    setSelectedId(id);
+    const v = variants.find((x) => x.id === id);
+    setPriceValue(String(v?.price ?? 0));
+    setStockValue(String(v?.stockQuantity ?? 0));
+    setEditing(false);
+  };
+
+  const startEdit = () => {
+    setPriceValue(String(selected.price));
+    setStockValue(String(selected.stockQuantity));
+    setEditing(true);
+  };
 
   const save = () => {
     setError(null);
@@ -29,7 +53,7 @@ export function AdminProductRow({ id, slug, name, collectionName, price, stockQu
     const s = Number(stockValue);
     startTransition(async () => {
       try {
-        await quickUpdatePriceStock(id, p, s);
+        await quickUpdatePriceStock(selected.id, p, s);
         setEditing(false);
         setSaved(true);
         setTimeout(() => setSaved(false), 1500);
@@ -39,12 +63,27 @@ export function AdminProductRow({ id, slug, name, collectionName, price, stockQu
     });
   };
 
-  const effectiveInStock = editing ? Number(stockValue) > 0 : inStock;
+  const effectiveInStock = editing ? Number(stockValue) > 0 : selected.inStock;
 
   return (
     <tr>
       <td className="py-3">{name}</td>
       <td className="py-3 text-text-secondary">{collectionName}</td>
+      <td className="py-3">
+        {variants.length > 1 ? (
+          <select
+            value={selectedId}
+            onChange={(e) => selectVariant(e.target.value)}
+            className="h-8 rounded-sm border border-border px-2 text-sm"
+          >
+            {variants.map((v) => (
+              <option key={v.id} value={v.id}>{v.label}</option>
+            ))}
+          </select>
+        ) : (
+          <span className="text-text-secondary">{selected.label}</span>
+        )}
+      </td>
       <td className="py-3">
         {editing ? (
           <input
@@ -55,8 +94,8 @@ export function AdminProductRow({ id, slug, name, collectionName, price, stockQu
             autoFocus
           />
         ) : (
-          <button onClick={() => setEditing(true)} className="hover:underline">
-            $ {price.toLocaleString("es-AR")}
+          <button onClick={startEdit} className="hover:underline">
+            $ {selected.price.toLocaleString("es-AR")}
           </button>
         )}
       </td>
@@ -69,8 +108,8 @@ export function AdminProductRow({ id, slug, name, collectionName, price, stockQu
             className="h-8 w-20 rounded-sm border border-accent px-2"
           />
         ) : (
-          <button onClick={() => setEditing(true)} className="hover:underline">
-            {stockQuantity ?? "—"} u.
+          <button onClick={startEdit} className="hover:underline">
+            {selected.stockQuantity} u.
           </button>
         )}
       </td>
@@ -97,7 +136,7 @@ export function AdminProductRow({ id, slug, name, collectionName, price, stockQu
         ) : (
           <div className="flex items-center justify-end gap-3">
             {saved && <span className="text-xs text-status-success">Guardado ✓</span>}
-            <button onClick={() => setEditing(true)} className="flex items-center gap-1 text-text-secondary hover:text-accent" aria-label="Edición rápida">
+            <button onClick={startEdit} className="flex items-center gap-1 text-text-secondary hover:text-accent" aria-label="Edición rápida">
               <Pencil size={13} />
             </button>
             <Link href={`/admin/productos/${slug}/editar`} className="text-accent">

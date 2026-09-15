@@ -1,10 +1,10 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { getProductCards } from "@/lib/queries/products";
+import { getAdminProductList } from "@/lib/queries/products";
 import { AdminProductRow } from "@/components/admin/admin-product-row";
 
 export default async function AdminProductosPage() {
-  const products = await getProductCards();
+  const products = await getAdminProductList();
 
   return (
     <div>
@@ -16,7 +16,7 @@ export default async function AdminProductosPage() {
       </div>
 
       <p className="mb-3 text-xs text-text-secondary">
-        Clic en el precio o el stock para editarlos directamente, sin abrir el producto.
+        Elegí el peso en el desplegable y hacé clic en el precio o el stock para editarlos directamente.
       </p>
 
       <table className="w-full text-left text-sm">
@@ -24,6 +24,7 @@ export default async function AdminProductosPage() {
           <tr>
             <th className="py-2 font-medium">Nombre</th>
             <th className="py-2 font-medium">Serie</th>
+            <th className="py-2 font-medium">Presentación</th>
             <th className="py-2 font-medium">Precio</th>
             <th className="py-2 font-medium">Stock</th>
             <th className="py-2 font-medium">Estado</th>
@@ -32,16 +33,7 @@ export default async function AdminProductosPage() {
         </thead>
         <tbody className="divide-y divide-border">
           {products.map((p) => (
-            <AdminProductRow
-              key={p.slug}
-              id={p.id}
-              slug={p.slug}
-              name={p.name}
-              collectionName={p.collection.name}
-              price={p.price}
-              stockQuantity={p.stockQuantity}
-              inStock={p.inStock}
-            />
+            <AdminProductRow key={p.id} slug={p.slug} name={p.name} collectionName={p.collectionName} variants={p.variants} />
           ))}
         </tbody>
       </table>

@@ -54,6 +54,32 @@ export async function getProductCards(collectionSlug?: string) {
   return products.map(toCard);
 }
 
+// Para /admin/productos — a diferencia de getProductCards, trae TODAS las presentaciones
+// (pesos) de cada producto con su propio precio y stock, no solo la primera.
+export async function getAdminProductList() {
+  const products = await prisma.product.findMany({
+    where: { deletedAt: null },
+    include: {
+      collection: { select: { name: true } },
+      variants: { include: { inventory: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+  return products.map((p) => ({
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    collectionName: p.collection.name,
+    variants: p.variants.map((v) => ({
+      id: v.id,
+      label: v.label,
+      price: Number(v.price),
+      stockQuantity: v.inventory?.quantity ?? 0,
+      inStock: v.inventory ? v.inventory.status !== "OUT_OF_STOCK" : true,
+    })),
+  }));
+}
+
 export async function getFeaturedProductCards(limit = 4) {
   const products = await prisma.product.findMany({
     where: { isActive: true, deletedAt: null },
