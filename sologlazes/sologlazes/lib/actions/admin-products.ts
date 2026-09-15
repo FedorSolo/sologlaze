@@ -142,7 +142,6 @@ export async function updateProductAction(
     });
   }
 
-  // Reemplaza todas las fotos por la lista actual (más simple y predecible que hacer diff).
   await prisma.productImage.deleteMany({ where: { productId } });
   if (images.length) {
     await prisma.productImage.createMany({
@@ -150,11 +149,30 @@ export async function updateProductAction(
     });
   }
 
-  // Mismo criterio para el video — como máximo uno por producto en el admin.
   await prisma.productVideo.deleteMany({ where: { productId } });
   if (videoUrl) {
     await prisma.productVideo.create({ data: { productId, url: videoUrl, alt: name, sortOrder: 0 } });
   }
+
+  revalidatePath("/admin/productos");
+  revalidatePath("/catalogo");
+  revalidatePath(`/producto/${product.slug}`);
+  return { success: true };
+}
+
+export async function quickUpdatePriceStock(variantId: string, price: number, stockQuantity: number) {
+  if (!Number.isFinite(price) || price <= 0) throw new Error("Precio inválido");
+  if (!Number.isFinite(stockQuantity) || stockQuantity < 0) throw new Error("Stock inválido");
+
+  const variant = await prisma.productVariant.findUnique({ where: { id: variantId }, include: { product: true } });
+  if (!variant) throw new Error("Presentación no encontrada");
+
+  await prisma.productVariant.update({ where: { id: variantId }, data: { price } });
+  await prisma.inventory.upsert({
+    where: { variantId },
+    update: { quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+    create: { variantId, quantity: stockQuantity, status: stockQuantity > 0 ? "IN_STOCK" : "OUT_OF_STOCK" },
+  });
 
   revalidatePath("/admin/productos");
   revalidatePath("/catalogo");
