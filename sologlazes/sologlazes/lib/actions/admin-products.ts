@@ -142,6 +142,7 @@ export async function updateProductAction(
     });
   }
 
+  // Reemplaza todas las fotos por la lista actual (más simple y predecible que hacer diff).
   await prisma.productImage.deleteMany({ where: { productId } });
   if (images.length) {
     await prisma.productImage.createMany({
@@ -149,6 +150,7 @@ export async function updateProductAction(
     });
   }
 
+  // Mismo criterio para el video — como máximo uno por producto en el admin.
   await prisma.productVideo.deleteMany({ where: { productId } });
   if (videoUrl) {
     await prisma.productVideo.create({ data: { productId, url: videoUrl, alt: name, sortOrder: 0 } });
@@ -160,10 +162,7 @@ export async function updateProductAction(
   return { success: true };
 }
 
-<<<<<<< HEAD
 // Edición rápida desde la tabla de /admin/productos — un peso a la vez, sin abrir el formulario completo.
-=======
->>>>>>> e8af46dd73ea17eff775b21834f716bcb7d1437a
 export async function quickUpdatePriceStock(variantId: string, price: number, stockQuantity: number) {
   if (!Number.isFinite(price) || price <= 0) throw new Error("Precio inválido");
   if (!Number.isFinite(stockQuantity) || stockQuantity < 0) throw new Error("Stock inválido");
