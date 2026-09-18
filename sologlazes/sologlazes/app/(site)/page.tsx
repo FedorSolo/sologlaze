@@ -16,7 +16,7 @@ export default async function HomePage() {
 
   return (
     <>
-      <h1 className="sr-only">SoloGlazes — Esmaltes cerámicos listos para usar, cono 5–6</h1>
+      <h1 className="sr-only">SoloGlazes — Esmaltes cerámicos en polvo, cono 5–6</h1>
 
       {/* Hero — imagen a pantalla completa, sin texto encima */}
       <section className="relative -mt-px h-[60vh] w-full overflow-hidden lg:h-[85vh]">
@@ -33,7 +33,7 @@ export default async function HomePage() {
 
       <section className="container flex flex-col items-center gap-4 py-10 text-center lg:py-14">
         <span className="rounded-full bg-accent-soft px-4 py-1.5 text-caption uppercase tracking-wide text-accent">
-          Cono 5–6 · 1200°C · Listos para usar
+          Cono 5–6 · 1200°C · Proporciones exactas, sin tanteos
         </span>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href="/catalogo" className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-white transition-colors hover:bg-accent-hover">
@@ -73,6 +73,23 @@ export default async function HomePage() {
               </div>
             </Link>
           ))}
+        </div>
+      </section>
+
+      {/* Coworking */}
+      <section className="bg-surface-muted py-16 lg:py-24">
+        <div className="container flex flex-col items-center gap-4 text-center">
+          <p className="text-h3 uppercase tracking-wide text-accent">Coworking</p>
+          <h2 className="max-w-2xl text-h2 lg:text-h2-lg">Un espacio compartido para ceramistas</h2>
+          <p className="max-w-xl text-body text-text-secondary">
+            Trabajá, cocé tus piezas y compartí con otros ceramistas en nuestro taller de Federico Lacroze 1658.
+          </p>
+          <Link
+            href="/coworking"
+            className="mt-2 inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-sm text-white transition-colors hover:bg-accent-hover"
+          >
+            Conocer el coworking <ArrowRight size={16} />
+          </Link>
         </div>
       </section>
 
