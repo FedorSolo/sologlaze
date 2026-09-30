@@ -21,12 +21,17 @@ export function QuickOrderForm() {
     setSubmitting(true);
     setError(null);
     try {
-      const { whatsappUrl } = await createQuickOrderAction({
+      const result = await createQuickOrderAction({
         phone,
-        lines: lines.map((l) => ({ slug: l.slug, quantity: l.quantity })),
+        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
       });
+      if (!result.ok) {
+        setError(result.error);
+        setSubmitting(false);
+        return;
+      }
       clear();
-      window.location.href = whatsappUrl;
+      window.location.href = result.whatsappUrl;
     } catch {
       setError("No pudimos crear el pedido. Probá de nuevo.");
       setSubmitting(false);
@@ -52,10 +57,12 @@ export function QuickOrderForm() {
       <div className="flex gap-2">
         <input
           type="tel"
+          inputMode="tel"
+          autoComplete="tel"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="+54 9 11 ..."
-          className="h-11 flex-1 rounded-sm border border-border px-3 text-sm"
+          className="h-11 min-w-0 flex-1 rounded-sm border border-border px-3 text-sm"
           autoFocus
         />
         <button

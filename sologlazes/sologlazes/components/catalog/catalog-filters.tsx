@@ -92,9 +92,9 @@ export function CatalogFilters({
 
       {/* Mobile bottom-sheet */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end lg:hidden">
+        <div className="fixed inset-0 z-[60] flex flex-col justify-end lg:hidden">
           <div className="absolute inset-0 bg-text-primary/40" onClick={() => setMobileOpen(false)} />
-          <div className="relative max-h-[85vh] overflow-y-auto rounded-t-lg bg-surface p-6 pb-0">
+          <div className="relative max-h-[85dvh] overflow-y-auto rounded-t-lg bg-surface p-6 pb-0">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-h3">Filtrar</h2>
               <button aria-label="Cerrar" onClick={() => setMobileOpen(false)}>

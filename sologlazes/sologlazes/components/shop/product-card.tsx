@@ -3,11 +3,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState } from "react";
-import { Heart, Plus } from "lucide-react";
-import { useCart } from "@/lib/cart-context";
+import { Check, Plus } from "lucide-react";
+import { useCart, parseWeightKg } from "@/lib/cart-context";
 
 export type ProductCardData = {
   id: string;
+  variantId: string;
+  variantLabel?: string;
   slug: string;
   name: string;
   collection: { slug: "cristalina" | "floating" | "grrr"; name: string };
@@ -30,66 +32,85 @@ const collectionColor: Record<string, string> = {
 
 export function ProductCard({ product }: { product: ProductCardData }) {
   const [hovered, setHovered] = useState(false);
+  const [added, setAdded] = useState(false);
   const { add } = useCart();
+  const canBuy = product.inStock && !!product.variantId;
+  const href = `/producto/${product.slug}`;
+
+  const handleAdd = () => {
+    add(
+      {
+        variantId: product.variantId,
+        slug: product.slug,
+        name: product.name,
+        variantLabel: product.variantLabel,
+        price: product.price,
+        imageUrl: product.imageUrl,
+      },
+      1,
+      parseWeightKg(product.variantLabel)
+    );
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1400);
+  };
 
   return (
     <div
-      className="group rounded-md bg-surface transition-all duration-200 hover:-translate-y-1 hover:shadow-md"
+      className="group min-w-0 transition-transform duration-200 hover:-translate-y-1"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <Link href={`/producto/${product.slug}`} className="block">
-        <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-muted">
-          <Image
-            src={hovered && product.imageAltUrl ? product.imageAltUrl : product.imageUrl}
-            alt={product.imageAlt}
-            fill
-            className={`object-cover transition-opacity duration-300 ${product.inStock ? "" : "opacity-60"}`}
-          />
-          <span className={`absolute left-3 top-3 rounded-full bg-surface/90 px-2.5 py-1 text-caption uppercase tracking-wide ${collectionColor[product.collection.slug]}`}>
-            {product.collection.name}
-          </span>
-          <button
-            aria-label="Agregar a favoritos"
-            className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-full bg-surface/90 hover:bg-surface"
-            onClick={(e) => e.preventDefault()}
-          >
-            <Heart size={16} />
-          </button>
-          {!product.inStock && (
-            <span className="absolute bottom-3 left-3 rounded-full bg-text-primary px-2.5 py-1 text-caption uppercase text-surface">
-              Agotado
+      <div className="relative">
+        <Link href={href} className="block" tabIndex={-1} aria-hidden="true">
+          <div className="relative aspect-[4/5] overflow-hidden rounded-md bg-surface-muted">
+            <Image
+              src={hovered && product.imageAltUrl ? product.imageAltUrl : product.imageUrl}
+              alt={product.imageAlt}
+              fill
+              sizes="(min-width: 1280px) 22vw, (min-width: 768px) 30vw, 46vw"
+              className={`object-cover transition-opacity duration-300 ${product.inStock ? "" : "opacity-60"}`}
+            />
+            <span
+              className={`absolute left-2 top-2 max-w-[calc(100%-1rem)] truncate rounded-full bg-surface/90 px-2.5 py-1 text-caption uppercase tracking-wide sm:left-3 sm:top-3 ${
+                collectionColor[product.collection.slug] ?? ""
+              }`}
+            >
+              {product.collection.name}
             </span>
-          )}
-        </div>
-
-        <div className="flex items-end justify-between gap-2 px-1 py-3">
-          <div>
-            <h3 className="text-h3">{product.name}</h3>
-            <p className="text-small text-text-secondary">
-              {product.temperatureLabel}
-            </p>
-            <p className="mt-1 flex items-baseline gap-2 text-body-lg">
-              <span>$ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}</span>
-              {product.compareAtPrice && (
-                <span className="text-sm text-text-secondary line-through">
-                  $ {product.compareAtPrice.toLocaleString("es-AR")}
-                </span>
-              )}
-            </p>
+            {!product.inStock && (
+              <span className="absolute bottom-2 left-2 rounded-full bg-text-primary px-2.5 py-1 text-caption uppercase text-surface sm:bottom-3 sm:left-3">
+                Agotado
+              </span>
+            )}
           </div>
+        </Link>
+
+        {canBuy && (
           <button
-            aria-label="Agregar al carrito"
-            disabled={!product.inStock}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover disabled:opacity-40"
-            onClick={(e) => {
-              e.preventDefault();
-              add({ slug: product.slug, name: product.name, price: product.price, imageUrl: product.imageUrl });
-            }}
+            type="button"
+            aria-label={`Agregar ${product.name} al carrito`}
+            onClick={handleAdd}
+            className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover sm:bottom-3 sm:right-3"
           >
-            <Plus size={18} />
+            {added ? <Check size={18} /> : <Plus size={18} />}
           </button>
-        </div>
+        )}
+      </div>
+
+      <Link href={href} className="block px-1 pt-3">
+        <h3 className="text-base font-normal leading-snug sm:text-h3">{product.name}</h3>
+        <p className="mt-0.5 text-small text-text-secondary">
+          {product.temperatureLabel}
+          {product.variantLabel ? ` · ${product.variantLabel}` : ""}
+        </p>
+        <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-base sm:text-body-lg">
+          <span>
+            $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
+          </span>
+          {product.compareAtPrice && (
+            <span className="text-sm text-text-secondary line-through">$ {product.compareAtPrice.toLocaleString("es-AR")}</span>
+          )}
+        </p>
       </Link>
     </div>
   );

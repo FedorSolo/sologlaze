@@ -54,7 +54,7 @@ export default function CheckoutPage() {
 
     const formData = new FormData(formRef.current!);
     try {
-      const { orderNumber, mpCheckoutUrl } = await createOrderAction({
+      const result = await createOrderAction({
         name: String(formData.get("name")),
         email: String(formData.get("email")),
         phone: String(formData.get("phone")),
@@ -70,8 +70,14 @@ export default function CheckoutPage() {
         shippingLabel: `${shippingOption.label} — ${shippingOption.detail}`,
         shippingCost: shippingOption.price,
         paymentProvider: payment === "MERCADO_PAGO" ? "MERCADO_PAGO" : "MANUAL",
-        lines: lines.map((l) => ({ slug: l.slug, quantity: l.quantity })),
+        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
       });
+      if (!result.ok) {
+        setError(result.error);
+        setSubmitting(false);
+        return;
+      }
+      const { orderNumber, mpCheckoutUrl } = result;
       clear();
       if (mpCheckoutUrl) {
         window.location.href = mpCheckoutUrl;
@@ -100,13 +106,13 @@ export default function CheckoutPage() {
         <div className="space-y-8">
           <Step number={1} title="Tus datos">
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Nombre y apellido" name="name" required />
-              <Field label="Email" name="email" type="email" required />
-              <Field label="Teléfono (WhatsApp)" name="phone" required />
-              <Field label="Ciudad" name="city" required />
-              <Field label="Calle y número" name="street" className="sm:col-span-2" required />
-              <Field label="Código postal" name="postalCode" required />
-              <Field label="Provincia" name="province" required />
+              <Field label="Nombre y apellido" name="name" autoComplete="name" required />
+              <Field label="Email" name="email" type="email" autoComplete="email" inputMode="email" required />
+              <Field label="Teléfono (WhatsApp)" name="phone" type="tel" autoComplete="tel" inputMode="tel" required />
+              <Field label="Ciudad" name="city" autoComplete="address-level2" required />
+              <Field label="Calle y número" name="street" className="sm:col-span-2" autoComplete="street-address" required />
+              <Field label="Código postal" name="postalCode" autoComplete="postal-code" required />
+              <Field label="Provincia" name="province" autoComplete="address-level1" required />
             </div>
           </Step>
 
@@ -155,15 +161,16 @@ export default function CheckoutPage() {
           </Step>
         </div>
 
-        <aside className="h-fit space-y-4 rounded-lg border border-border bg-surface p-6 lg:sticky lg:top-6">
+        <aside className="h-fit space-y-4 rounded-lg border border-border bg-surface p-6 lg:sticky lg:top-28">
           <h2 className="text-h3">Resumen</h2>
           <div className="space-y-2">
             {lines.map((l) => (
-              <div key={l.slug} className="flex justify-between text-sm">
-                <span className="text-text-secondary">
-                  {l.name} × {l.quantity}
+              <div key={l.variantId} className="flex justify-between gap-3 text-sm">
+                <span className="min-w-0 text-text-secondary">
+                  {l.name}
+                  {l.variantLabel ? ` (${l.variantLabel})` : ""} × {l.quantity}
                 </span>
-                <span>$ {(l.price * l.quantity).toLocaleString("es-AR")}</span>
+                <span className="shrink-0">$ {(l.price * l.quantity).toLocaleString("es-AR")}</span>
               </div>
             ))}
           </div>
@@ -267,12 +274,16 @@ function Field({
   type = "text",
   required = false,
   className = "",
+  autoComplete,
+  inputMode,
 }: {
   label: string;
   name: string;
   type?: string;
   required?: boolean;
   className?: string;
+  autoComplete?: string;
+  inputMode?: "text" | "tel" | "email" | "numeric";
 }) {
   return (
     <label className={`block text-sm ${className}`}>
@@ -281,6 +292,8 @@ function Field({
         name={name}
         type={type}
         required={required}
+        autoComplete={autoComplete}
+        inputMode={inputMode}
         className="h-11 w-full rounded-sm border border-border px-3 focus:border-accent"
       />
     </label>

@@ -1,22 +1,34 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import type { ProductCardData } from "@/components/shop/product-card";
 
+// Cada línea del carrito es una PRESENTACIÓN concreta (peso) de un producto, identificada por variantId.
+// Así 0.5 kg y 1 kg del mismo esmalte son líneas distintas, cada una con su precio.
 export type CartLine = {
+  variantId: string;
   slug: string;
-  name: string;
+  name: string; // nombre del producto (sin el peso)
+  variantLabel?: string; // "0.5 kg", "1 kg"...
   price: number;
   imageUrl: string;
   quantity: number;
   weightKg?: number;
 };
 
+export type CartAddItem = {
+  variantId: string;
+  slug: string;
+  name: string;
+  variantLabel?: string;
+  price: number;
+  imageUrl: string;
+};
+
 type CartContextValue = {
   lines: CartLine[];
-  add: (product: Pick<ProductCardData, "slug" | "name" | "price" | "imageUrl">, qty?: number, weightKg?: number) => void;
-  updateQty: (slug: string, qty: number) => void;
-  remove: (slug: string) => void;
+  add: (item: CartAddItem, qty?: number, weightKg?: number) => void;
+  updateQty: (variantId: string, qty: number) => void;
+  remove: (variantId: string) => void;
   clear: () => void;
   subtotal: number;
   totalWeightKg: number;
@@ -24,7 +36,7 @@ type CartContextValue = {
 };
 
 const CartContext = createContext<CartContextValue | null>(null);
-const STORAGE_KEY = "sologlazes:cart";
+const STORAGE_KEY = "sologlazes:cart:v2";
 
 // Intenta extraer el peso en kg de una etiqueta de variante tipo "0.5 kg", "1 kg" o "200 g".
 // Si no matchea nada (ej. "Frasco"), devuelve undefined — ese producto no suma al umbral de envío gratis.
@@ -44,7 +56,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw) setLines(JSON.parse(raw));
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) {
+          setLines(parsed.filter((l): l is CartLine => l && typeof l.variantId === "string" && l.variantId.length > 0));
+        }
+      }
     } catch {
       // localStorage no disponible (SSR / modo privado) — se ignora, carrito arranca vacío
     }
@@ -53,24 +70,31 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!hydrated) return;
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(lines));
+    } catch {
+      // sin persistencia — el carrito sigue funcionando en memoria
+    }
   }, [lines, hydrated]);
 
-  const add: CartContextValue["add"] = (product, qty = 1, weightKg) => {
+  const add: CartContextValue["add"] = (item, qty = 1, weightKg) => {
+    if (!item.variantId) return;
     setLines((prev) => {
-      const existing = prev.find((l) => l.slug === product.slug);
+      const existing = prev.find((l) => l.variantId === item.variantId);
       if (existing) {
-        return prev.map((l) => (l.slug === product.slug ? { ...l, quantity: l.quantity + qty } : l));
+        return prev.map((l) => (l.variantId === item.variantId ? { ...l, quantity: l.quantity + qty } : l));
       }
-      return [...prev, { slug: product.slug, name: product.name, price: product.price, imageUrl: product.imageUrl, quantity: qty, weightKg }];
+      return [...prev, { ...item, quantity: qty, weightKg }];
     });
   };
 
-  const updateQty = (slug: string, qty: number) => {
-    setLines((prev) => (qty <= 0 ? prev.filter((l) => l.slug !== slug) : prev.map((l) => (l.slug === slug ? { ...l, quantity: qty } : l))));
+  const updateQty = (variantId: string, qty: number) => {
+    setLines((prev) =>
+      qty <= 0 ? prev.filter((l) => l.variantId !== variantId) : prev.map((l) => (l.variantId === variantId ? { ...l, quantity: qty } : l))
+    );
   };
 
-  const remove = (slug: string) => setLines((prev) => prev.filter((l) => l.slug !== slug));
+  const remove = (variantId: string) => setLines((prev) => prev.filter((l) => l.variantId !== variantId));
   const clear = () => setLines([]);
 
   const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);

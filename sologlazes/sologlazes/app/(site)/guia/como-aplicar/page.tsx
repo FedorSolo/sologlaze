@@ -53,7 +53,8 @@ export default function ComoAplicarPage() {
           <div key={t.title} className="mb-8">
             <h2 className="mb-1 text-h3">{t.title}</h2>
             <p className="mb-3 text-sm text-text-secondary">Colores: {t.colors}</p>
-            <table className="w-full text-left text-sm">
+            <div className="overflow-x-auto">
+            <table className="w-full min-w-[420px] text-left text-sm">
               <thead className="border-b border-border text-text-secondary">
                 <tr>
                   <th className="py-2 pr-4 font-medium">Cantidad</th>
@@ -73,6 +74,7 @@ export default function ComoAplicarPage() {
                 ))}
               </tbody>
             </table>
+            </div>
           </div>
         ))}
 

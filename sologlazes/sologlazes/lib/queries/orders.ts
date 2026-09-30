@@ -58,6 +58,7 @@ export function toOrderView(order: NonNullable<Awaited<ReturnType<typeof getOrde
       : undefined,
     items: order.items.map((item) => ({
       name: item.productNameSnapshot,
+      variantId: item.variantId ?? undefined,
       variantLabel: item.variantLabelSnapshot ?? undefined,
       slug: item.variant?.product.slug ?? "",
       quantity: item.quantity,

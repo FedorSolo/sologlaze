@@ -22,7 +22,7 @@ export default {
         },
         text: {
           primary: "#222222", // Ink
-          secondary: "#A1A19C", // Fog
+          secondary: "#6B6B65", // Fog oscurecido — el #A1A19C original daba contraste 2.4:1 (ilegible); este da ~5:1
           disabled: "#C7C7C0",
         },
         accent: {

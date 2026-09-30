@@ -7,7 +7,7 @@ const cardInclude = {
   collection: { select: { slug: true, name: true } },
   images: { orderBy: { sortOrder: "asc" as const }, take: 2 },
   attributeValues: { include: { attributeValue: { include: { attribute: true } } } },
-  variants: { include: { inventory: true }, take: 1 },
+  variants: { include: { inventory: true }, orderBy: { price: "asc" as const }, take: 1 },
 } satisfies Prisma.ProductInclude;
 
 type ProductWithCardRelations = Prisma.ProductGetPayload<{ include: typeof cardInclude }>;
@@ -25,6 +25,8 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
 
   return {
     id: product.id,
+    variantId: product.variants[0]?.id ?? "",
+    variantLabel: product.variants[0]?.label,
     slug: product.slug,
     name: product.name,
     collection: product.collection as { slug: "cristalina" | "floating" | "grrr"; name: string },
@@ -61,7 +63,7 @@ export async function getAdminProductList() {
     where: { deletedAt: null },
     include: {
       collection: { select: { name: true } },
-      variants: { include: { inventory: true } },
+      variants: { include: { inventory: true }, orderBy: { price: "asc" } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -97,7 +99,7 @@ export async function getProductDetail(slug: string) {
       collection: { select: { slug: true, name: true } },
       images: { orderBy: { sortOrder: "asc" } },
       videos: { orderBy: { sortOrder: "asc" } },
-      variants: { include: { inventory: true } },
+      variants: { include: { inventory: true }, orderBy: { price: "asc" } },
       attributeValues: { include: { attributeValue: { include: { attribute: true } } } },
       reviews: { where: { status: "APPROVED" }, include: { images: true }, orderBy: { createdAt: "desc" } },
     },
@@ -118,10 +120,16 @@ export async function getProductDetail(slug: string) {
     shortDescription: product.shortDescription,
     description: product.description,
     applicationInstructions: product.applicationInstructions,
-    inStock: inventory ? inventory.status !== "OUT_OF_STOCK" : true,
+    inStock: product.variants.length === 0 ? true : product.variants.some((v) => (v.inventory ? v.inventory.status !== "OUT_OF_STOCK" : true)),
     stockQuantity: inventory?.quantity ?? 0,
     attributes: [{ label: "Temperatura", value: attrValue(product, "temperature") }],
-    variants: product.variants.map((v) => ({ id: v.id, label: v.label, price: Number(v.price), compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined })),
+    variants: product.variants.map((v) => ({
+      id: v.id,
+      label: v.label,
+      price: Number(v.price),
+      compareAtPrice: v.compareAtPrice ? Number(v.compareAtPrice) : undefined,
+      inStock: v.inventory ? v.inventory.status !== "OUT_OF_STOCK" : true,
+    })),
     images: product.images.map((img) => ({ url: img.url, alt: img.alt, type: img.type })),
     videoUrl: product.videos[0]?.url,
     reviews: product.reviews.map((r) => ({

@@ -48,7 +48,7 @@ export default async function HomePage() {
       {/* Colecciones */}
       <section className="container py-16 lg:py-24">
         <h2 className="mb-10 text-h2 lg:text-h2-lg">Nuestras líneas</h2>
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {collections.map((c) => (
             <Link
               key={c.slug}
@@ -60,13 +60,14 @@ export default async function HomePage() {
                   src={c.heroImageUrl}
                   alt={`Piezas de cerámica con esmaltes de la línea ${c.name}`}
                   fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 50vw, 100vw"
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
               <div className="p-6">
                 <div className={`mb-4 h-1 w-10 rounded-full ${collectionAccent[c.slug] ?? "bg-accent"}`} />
                 <h3 className="mb-2 text-h3">{c.name}</h3>
-                <p className="mb-4 text-body text-text-secondary">{c.description}</p>
+                <p className="mb-4 line-clamp-4 text-body text-text-secondary">{c.description}</p>
                 <span className="inline-flex items-center gap-1 text-sm text-accent">
                   Explorar <ArrowRight size={14} className="transition-transform group-hover:translate-x-1" />
                 </span>

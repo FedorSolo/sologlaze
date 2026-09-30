@@ -16,9 +16,9 @@ export default function AdminRootLayout({ children }: { children: React.ReactNod
   return (
     <html lang="es" className={interTight.variable}>
       <body>
-        <div className="flex min-h-screen">
+        <div className="flex min-h-screen flex-col lg:flex-row">
           <AdminNav />
-          <div className="flex-1 p-8">{children}</div>
+          <div className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</div>
         </div>
       </body>
     </html>

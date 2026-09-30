@@ -6,7 +6,8 @@ export default async function AdminUsuariosPage() {
   return (
     <div>
       <h1 className="mb-6 text-h1">Usuarios</h1>
-      <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto">
+      <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="border-b border-border text-text-secondary">
           <tr>
             <th className="py-2 font-medium">Nombre</th>
@@ -28,6 +29,7 @@ export default async function AdminUsuariosPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

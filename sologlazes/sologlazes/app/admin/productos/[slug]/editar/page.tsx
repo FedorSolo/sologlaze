@@ -10,7 +10,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
     prisma.product.findUnique({
       where: { slug },
       include: {
-        variants: { include: { inventory: true } },
+        variants: { include: { inventory: true }, orderBy: { price: "asc" } },
         images: { orderBy: { sortOrder: "asc" } },
         videos: { orderBy: { sortOrder: "asc" }, take: 1 },
       },

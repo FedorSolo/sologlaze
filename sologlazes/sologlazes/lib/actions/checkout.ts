@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/send";
 import { mpClient } from "@/lib/mercadopago";
 import { Preference } from "mercadopago";
+import { reserveStock, OutOfStockError } from "@/lib/stock";
 
 export type CheckoutInput = {
   name: string;
@@ -18,75 +19,103 @@ export type CheckoutInput = {
   shippingLabel: string;
   shippingCost: number;
   paymentProvider: "MERCADO_PAGO" | "MANUAL";
-  lines: { slug: string; quantity: number }[];
+  lines: { variantId: string; quantity: number }[];
 };
+
+export type CheckoutResult =
+  | { ok: false; error: string }
+  | { ok: true; orderNumber: string; orderId: string; mpCheckoutUrl?: string };
 
 function generateOrderNumber() {
   return `SG-${Math.floor(100000 + Math.random() * 900000)}`;
 }
 
-export async function createOrderAction(input: CheckoutInput) {
+export async function createOrderAction(input: CheckoutInput): Promise<CheckoutResult> {
   const session = await auth();
 
   // Los precios se vuelven a leer desde la base — nunca se confía en el precio que llega del cliente.
-  const products = await prisma.product.findMany({
-    where: { slug: { in: input.lines.map((l) => l.slug) } },
-    include: { variants: true },
+  // Cada línea es una presentación concreta (peso) identificada por variantId.
+  const variants = await prisma.productVariant.findMany({
+    where: {
+      id: { in: input.lines.map((l) => l.variantId) },
+      product: { isActive: true, deletedAt: null },
+    },
+    include: { product: true, inventory: true },
   });
 
+  const soldOut: string[] = [];
   const orderItemsData = input.lines.flatMap((line) => {
-    const product = products.find((p) => p.slug === line.slug);
-    const variant = product?.variants[0];
-    if (!product || !variant) return [];
+    const variant = variants.find((v) => v.id === line.variantId);
+    if (!variant) return [];
+    if (variant.inventory?.status === "OUT_OF_STOCK") {
+      soldOut.push(`${variant.product.name} (${variant.label})`);
+      return [];
+    }
+    const quantity = Math.min(200, Math.max(1, Math.floor(Number(line.quantity) || 1)));
     return [
       {
         variantId: variant.id,
-        productNameSnapshot: product.name,
+        productNameSnapshot: variant.product.name,
         variantLabelSnapshot: variant.label,
         unitPriceSnapshot: variant.price,
-        quantity: line.quantity,
+        quantity,
       },
     ];
   });
 
+  if (soldOut.length > 0) {
+    return { ok: false, error: `Sin stock por el momento: ${soldOut.join(", ")}. Quitalo del carrito para continuar.` };
+  }
   if (orderItemsData.length === 0) {
-    throw new Error("No se encontraron productos válidos para este pedido.");
+    return { ok: false, error: "No se encontraron productos válidos para este pedido. Revisá tu carrito." };
   }
 
   const subtotal = orderItemsData.reduce((sum, i) => sum + Number(i.unitPriceSnapshot) * i.quantity, 0);
   const total = subtotal + input.shippingCost;
 
-  const address = await prisma.address.create({
-    data: {
-      userId: session?.user?.id,
-      street: input.street,
-      number: "",
-      city: input.city,
-      province: input.province,
-      postalCode: input.postalCode,
-    },
-  });
-
   const contactNote = `Nombre: ${input.name} · Tel: ${input.phone} · Email: ${input.email}`;
   const fullComment = input.comment ? `${contactNote}\n\n${input.comment}` : contactNote;
+  const labels = Object.fromEntries(variants.map((v) => [v.id, `${v.product.name} (${v.label})`]));
 
-  const order = await prisma.order.create({
-    data: {
-      orderNumber: generateOrderNumber(),
-      userId: session?.user?.id,
-      status: "PENDING",
-      subtotal,
-      shippingCost: input.shippingCost,
-      total,
-      shippingAddressId: address.id,
-      customerComment: fullComment,
-      trackingCarrier: input.shippingLabel,
-      paymentProvider: input.paymentProvider,
-      paymentStatus: "PENDING",
-      items: { create: orderItemsData },
-      statusHistory: { create: { status: "PENDING", note: "Pedido creado desde el checkout" } },
-    },
-  });
+  // Stock + dirección + pedido en UNA transacción: si falta stock no queda nada a medias.
+  let order;
+  try {
+    order = await prisma.$transaction(async (tx) => {
+      await reserveStock(tx, orderItemsData, labels);
+
+      const address = await tx.address.create({
+        data: {
+          userId: session?.user?.id,
+          street: input.street,
+          number: "",
+          city: input.city,
+          province: input.province,
+          postalCode: input.postalCode,
+        },
+      });
+
+      return tx.order.create({
+        data: {
+          orderNumber: generateOrderNumber(),
+          userId: session?.user?.id,
+          status: "PENDING",
+          subtotal,
+          shippingCost: input.shippingCost,
+          total,
+          shippingAddressId: address.id,
+          customerComment: fullComment,
+          trackingCarrier: input.shippingLabel,
+          paymentProvider: input.paymentProvider,
+          paymentStatus: "PENDING",
+          items: { create: orderItemsData },
+          statusHistory: { create: { status: "PENDING", note: "Pedido creado desde el checkout" } },
+        },
+      });
+    });
+  } catch (err) {
+    if (err instanceof OutOfStockError) return { ok: false, error: `${err.message} Actualizá tu carrito e intentá de nuevo.` };
+    throw err;
+  }
 
   try {
     await sendOrderConfirmationEmail(input.email, {
@@ -157,5 +186,5 @@ export async function createOrderAction(input: CheckoutInput) {
     }
   }
 
-  return { orderNumber: order.orderNumber, orderId: order.id, mpCheckoutUrl };
+  return { ok: true, orderNumber: order.orderNumber, orderId: order.id, mpCheckoutUrl };
 }

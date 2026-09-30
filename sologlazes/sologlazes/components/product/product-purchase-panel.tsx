@@ -24,6 +24,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
   const [selectedVariantId, setSelectedVariantId] = useState(variants[0]?.id);
   const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
   const displayPrice = selectedVariant?.price ?? product.price;
+  const selectedInStock = selectedVariant ? selectedVariant.inStock !== false : product.inStock;
 
   const handleFavorite = () => {
     setFavorited((f) => !f); // optimista
@@ -37,22 +38,25 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
   };
 
   const handleAdd = () => {
+    if (!selectedVariant) return;
     add(
       {
+        variantId: selectedVariant.id,
         slug: product.slug,
-        name: selectedVariant ? `${product.name} (${selectedVariant.label})` : product.name,
-        price: displayPrice,
-        imageUrl: product.images[0]?.url ?? "",
+        name: product.name,
+        variantLabel: selectedVariant.label,
+        price: selectedVariant.price,
+        imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
       },
       qty,
-      parseWeightKg(selectedVariant?.label)
+      parseWeightKg(selectedVariant.label)
     );
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   };
 
   return (
-    <div>
+    <div className="min-w-0">
       <p className={`mb-1 text-h3 uppercase tracking-wide ${collectionTextColor[product.collection.slug] ?? "text-accent"}`}>{product.collection.name}</p>
       <h1 className="mb-2 text-h1 lg:text-h1-lg">{product.name}</h1>
       <p className="mb-4 text-body-lg text-text-primary/80">{product.shortDescription}</p>
@@ -75,27 +79,29 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       </p>
 
       {variants.length > 1 && (
-        <div className="mb-4 flex gap-2">
+        <div className="mb-4 flex flex-wrap gap-2">
           {variants.map((v) => (
             <button
               key={v.id}
+              type="button"
               onClick={() => setSelectedVariantId(v.id)}
               className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                v.id === selectedVariantId ? "border-accent bg-accent-soft text-accent" : "border-border text-text-secondary"
+                v.id === selectedVariantId ? "border-accent bg-accent-soft text-accent" : "border-border text-text-primary/70"
               }`}
             >
               {v.label} — $ {v.price.toLocaleString("es-AR")}
+              {v.inStock === false ? " (agotado)" : ""}
             </button>
           ))}
         </div>
       )}
 
-      {!product.inStock ? (
+      {!selectedInStock ? (
         <span className="mb-6 inline-block rounded-full bg-status-error/10 px-3 py-1 text-sm text-status-error">
-          Agotado — dejanos tu email y te avisamos
+          Agotado por el momento — escribinos por WhatsApp y te avisamos cuando vuelva
         </span>
       ) : (
-        <div className="mb-6 flex items-center gap-4">
+        <div className="mb-6 flex items-center gap-3 sm:gap-4">
           <div className="flex items-center rounded-full border border-border-strong">
             <button
               aria-label="Restar"
@@ -116,7 +122,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
 
           <button
             onClick={handleAdd}
-            className="flex-1 rounded-full bg-accent py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+            className="min-w-0 flex-1 rounded-full bg-accent px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
           >
             {added ? "✓" : t("agregarAlCarrito")}
           </button>
@@ -169,6 +175,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
         <p className="mb-2 mt-4 text-xs font-medium text-text-primary/70">Video: cómo mezclar los esmaltes</p>
         <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface-muted">
           <iframe
+            loading="lazy"
             src="https://www.youtube.com/embed/Gu6luGOo1vA"
             title="Cómo mezclar los esmaltes SoloGlazes"
             className="absolute inset-0 h-full w-full"

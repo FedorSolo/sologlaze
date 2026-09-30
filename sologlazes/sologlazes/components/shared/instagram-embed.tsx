@@ -10,7 +10,7 @@ export function InstagramEmbed({ url }: { url: string }) {
   }, []);
 
   return (
-    <>
+    <div className="w-full min-w-0 max-w-[540px] overflow-hidden">
       <blockquote
         className="instagram-media mx-auto"
         data-instgrm-permalink={url}
@@ -25,6 +25,6 @@ export function InstagramEmbed({ url }: { url: string }) {
           if (window.instgrm) window.instgrm.Embeds.process();
         }}
       />
-    </>
+    </div>
   );
 }

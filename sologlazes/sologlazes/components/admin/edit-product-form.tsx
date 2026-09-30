@@ -68,8 +68,8 @@ export function EditProductForm({
         <span className="mb-2 block text-sm text-text-secondary">Presentaciones (precio y stock por peso)</span>
         <div className="space-y-3 rounded-md border border-border p-3">
           {initial.variants.map((v, i) => (
-            <div key={v.id} className="grid grid-cols-3 gap-3 border-b border-border pb-3 last:border-0 last:pb-0">
-              <div className="col-span-3 text-sm font-medium">{v.label}</div>
+            <div key={v.id} className="grid grid-cols-1 gap-3 border-b border-border pb-3 last:border-0 last:pb-0 sm:grid-cols-3">
+              <div className="text-sm font-medium sm:col-span-3">{v.label}</div>
               <input type="hidden" name={`variantId_${i}`} value={v.id} />
               <label className="block text-xs">
                 <span className="mb-1 block text-text-secondary">Precio nuevo (ARS)</span>

@@ -19,7 +19,9 @@ export default async function AdminProductosPage() {
         Elegí el peso en el desplegable y hacé clic en el precio o el stock para editarlos directamente.
       </p>
 
-      <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto">
+
+      <table className="w-full min-w-[720px] text-left text-sm">
         <thead className="border-b border-border text-text-secondary">
           <tr>
             <th className="py-2 font-medium">Nombre</th>
@@ -37,6 +39,7 @@ export default async function AdminProductosPage() {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 }

@@ -17,11 +17,11 @@ const interTight = Inter_Tight({
 export const metadata: Metadata = {
   metadataBase: new URL("https://sologlazes.com.ar"),
   title: {
-    default: "SoloGlazes — Esmaltes cerámicos listos para usar",
+    default: "SoloGlazes — Esmaltes cerámicos en polvo",
     template: "%s · SoloGlazes",
   },
   description:
-    "Esmaltes cerámicos para cono 5–6 (1200°C), listos para aplicar. Cristalina, Floating y GRRR — el efecto que buscás en tu pieza, sin tamizar ni mezclar.",
+    "Esmaltes cerámicos en polvo para cono 5–6 (1200°C). Se preparan mezclando con agua según proporciones exactas, con modificadores que mejoran la aplicación sobre el bizcocho. Cristalina, Floating y GRRR.",
   openGraph: {
     siteName: "SoloGlazes",
     type: "website",
@@ -36,9 +36,9 @@ const organizationJsonLd = {
   "@type": "Organization",
   name: "SoloGlazes",
   url: "https://sologlazes.com.ar",
-  logo: "https://sologlazes.com.ar/images/logo-solo.png",
+  logo: "https://sologlazes.com.ar/images/logo-sologlazes.png",
   areaServed: "AR",
-  sameAs: ["https://instagram.com", "https://wa.me/5491127379589"],
+  sameAs: ["https://instagram.com/sologlazes.arg", "https://wa.me/5491127379589"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

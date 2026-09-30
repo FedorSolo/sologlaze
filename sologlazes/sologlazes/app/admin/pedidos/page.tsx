@@ -11,7 +11,8 @@ export default async function AdminPedidosPage() {
       {orders.length === 0 ? (
         <p className="text-sm text-text-secondary">Todavía no hay pedidos.</p>
       ) : (
-        <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-border text-text-secondary">
             <tr>
               <th className="py-2 font-medium">Pedido</th>
@@ -35,6 +36,7 @@ export default async function AdminPedidosPage() {
             ))}
           </tbody>
         </table>
+      </div>
       )}
     </div>
   );
