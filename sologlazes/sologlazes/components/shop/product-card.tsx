@@ -16,6 +16,7 @@ export type ProductCardData = {
   temperatureLabel: string;
   price: number;
   compareAtPrice?: number;
+  variantPrices?: { label: string; price: number }[];
   currency?: string;
   imageUrl: string;
   imageAltUrl?: string;
@@ -103,14 +104,25 @@ export function ProductCard({ product }: { product: ProductCardData }) {
           {product.temperatureLabel}
           {product.variantLabel ? ` · ${product.variantLabel}` : ""}
         </p>
-        <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-base sm:text-body-lg">
-          <span>
-            $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
-          </span>
-          {product.compareAtPrice && (
-            <span className="text-sm text-text-secondary line-through">$ {product.compareAtPrice.toLocaleString("es-AR")}</span>
-          )}
-        </p>
+        {product.variantPrices && product.variantPrices.length > 1 ? (
+          <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm sm:text-base">
+            {product.variantPrices.map((v) => (
+              <span key={v.label} className="whitespace-nowrap">
+                {v.label}{" "}
+                <span className="font-medium">$ {v.price.toLocaleString("es-AR")}</span>
+              </span>
+            ))}
+          </p>
+        ) : (
+          <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-base sm:text-body-lg">
+            <span>
+              $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
+            </span>
+            {product.compareAtPrice && (
+              <span className="text-sm text-text-secondary line-through">$ {product.compareAtPrice.toLocaleString("es-AR")}</span>
+            )}
+          </p>
+        )}
       </Link>
     </div>
   );

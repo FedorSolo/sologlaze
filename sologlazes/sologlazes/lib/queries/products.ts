@@ -7,7 +7,7 @@ const cardInclude = {
   collection: { select: { slug: true, name: true } },
   images: { orderBy: { sortOrder: "asc" as const }, take: 2 },
   attributeValues: { include: { attributeValue: { include: { attribute: true } } } },
-  variants: { include: { inventory: true }, orderBy: { price: "asc" as const }, take: 1 },
+  variants: { include: { inventory: true }, orderBy: { price: "asc" as const } }, // sin take: para poder mostrar precio de cada peso en la tarjeta
 } satisfies Prisma.ProductInclude;
 
 type ProductWithCardRelations = Prisma.ProductGetPayload<{ include: typeof cardInclude }>;
@@ -35,6 +35,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
     price: Number(price),
     compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
     currency: product.currency,
+    variantPrices: product.variants.map((v) => ({ label: v.label, price: Number(v.price) })),
     imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
     imageAltUrl: product.images[1]?.url,
     imageAlt: product.images[0]?.alt ?? product.name,

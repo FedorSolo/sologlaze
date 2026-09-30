@@ -9,6 +9,16 @@ import { ProductPurchasePanel } from "@/components/product/product-purchase-pane
 import { ProductReviews } from "@/components/product/product-reviews";
 import { ReviewForm } from "@/components/product/review-form";
 import { ProductCard } from "@/components/shop/product-card";
+import { prisma as prismaClient } from "@/lib/prisma";
+
+// Sin esto, cada visita a una ficha de producto consultaba la base desde cero (Next 15 no cachea
+// fetch por defecto) y no había nada prerenderizado — por eso la navegación se sentía "colgada".
+export const revalidate = 60;
+
+export async function generateStaticParams() {
+  const products = await prismaClient.product.findMany({ where: { isActive: true, deletedAt: null }, select: { slug: true } });
+  return products.map((p) => ({ slug: p.slug }));
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
