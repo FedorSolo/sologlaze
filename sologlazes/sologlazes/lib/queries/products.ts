@@ -35,7 +35,7 @@ function toCard(product: ProductWithCardRelations): ProductCardData & {
     price: Number(price),
     compareAtPrice: compareAtPrice ? Number(compareAtPrice) : undefined,
     currency: product.currency,
-    variantPrices: product.variants.map((v) => ({ label: v.label, price: Number(v.price) })),
+    variantPrices: product.variants.map((v) => ({ id: v.id, label: v.label, price: Number(v.price) })),
     imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
     imageAltUrl: product.images[1]?.url,
     imageAlt: product.images[0]?.alt ?? product.name,

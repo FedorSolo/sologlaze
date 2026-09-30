@@ -16,7 +16,7 @@ export type ProductCardData = {
   temperatureLabel: string;
   price: number;
   compareAtPrice?: number;
-  variantPrices?: { label: string; price: number }[];
+  variantPrices?: { id: string; label: string; price: number }[];
   currency?: string;
   imageUrl: string;
   imageAltUrl?: string;
@@ -35,21 +35,28 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const [hovered, setHovered] = useState(false);
   const [added, setAdded] = useState(false);
   const { add } = useCart();
-  const canBuy = product.inStock && !!product.variantId;
   const href = `/producto/${product.slug}`;
+
+  // Si hay más de un peso, el comprador puede elegir cuál agregar sin entrar a la ficha.
+  const hasWeights = !!product.variantPrices && product.variantPrices.length > 1;
+  const [selectedVariantId, setSelectedVariantId] = useState(product.variantId);
+  const selected = hasWeights ? product.variantPrices!.find((v) => v.id === selectedVariantId) : undefined;
+  const addPrice = selected?.price ?? product.price;
+  const addLabel = selected?.label ?? product.variantLabel;
+  const canBuy = product.inStock && !!selectedVariantId;
 
   const handleAdd = () => {
     add(
       {
-        variantId: product.variantId,
+        variantId: selectedVariantId,
         slug: product.slug,
         name: product.name,
-        variantLabel: product.variantLabel,
-        price: product.price,
+        variantLabel: addLabel,
+        price: addPrice,
         imageUrl: product.imageUrl,
       },
       1,
-      parseWeightKg(product.variantLabel)
+      parseWeightKg(addLabel)
     );
     setAdded(true);
     setTimeout(() => setAdded(false), 1400);
@@ -89,7 +96,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         {canBuy && (
           <button
             type="button"
-            aria-label={`Agregar ${product.name} al carrito`}
+            aria-label={`Agregar ${product.name}${addLabel ? ` (${addLabel})` : ""} al carrito`}
             onClick={handleAdd}
             className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover sm:bottom-3 sm:right-3"
           >
@@ -98,32 +105,43 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         )}
       </div>
 
-      <Link href={href} className="block px-1 pt-3">
-        <h3 className="text-base font-normal leading-snug sm:text-h3">{product.name}</h3>
-        <p className="mt-0.5 text-small text-text-secondary">
-          {product.temperatureLabel}
-          {product.variantLabel ? ` · ${product.variantLabel}` : ""}
-        </p>
-        {product.variantPrices && product.variantPrices.length > 1 ? (
-          <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-sm sm:text-base">
-            {product.variantPrices.map((v) => (
-              <span key={v.label} className="whitespace-nowrap">
-                {v.label}{" "}
-                <span className="font-medium">$ {v.price.toLocaleString("es-AR")}</span>
-              </span>
+      <div className="px-1 pt-3">
+        <Link href={href} className="block">
+          <h3 className="text-base font-normal leading-snug sm:text-h3">{product.name}</h3>
+          <p className="mt-0.5 text-small text-text-secondary">{product.temperatureLabel}</p>
+        </Link>
+
+        {hasWeights ? (
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
+            {product.variantPrices!.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                onClick={() => setSelectedVariantId(v.id)}
+                aria-pressed={v.id === selectedVariantId}
+                className={`rounded-full border px-2.5 py-1 text-xs transition-colors sm:text-sm ${
+                  v.id === selectedVariantId
+                    ? "border-accent bg-accent-soft text-accent"
+                    : "border-border text-text-primary/70 hover:border-accent hover:bg-accent-soft/50 hover:text-accent"
+                }`}
+              >
+                {v.label} · $ {v.price.toLocaleString("es-AR")}
+              </button>
             ))}
-          </p>
+          </div>
         ) : (
-          <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-base sm:text-body-lg">
-            <span>
-              $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
-            </span>
-            {product.compareAtPrice && (
-              <span className="text-sm text-text-secondary line-through">$ {product.compareAtPrice.toLocaleString("es-AR")}</span>
-            )}
-          </p>
+          <Link href={href} className="block">
+            <p className="mt-1 flex flex-wrap items-baseline gap-x-2 text-base sm:text-body-lg">
+              <span>
+                $ {product.price.toLocaleString("es-AR")} {product.currency ?? "ARS"}
+              </span>
+              {product.compareAtPrice && (
+                <span className="text-sm text-text-secondary line-through">$ {product.compareAtPrice.toLocaleString("es-AR")}</span>
+              )}
+            </p>
+          </Link>
         )}
-      </Link>
+      </div>
     </div>
   );
 }

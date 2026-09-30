@@ -86,7 +86,9 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
               type="button"
               onClick={() => setSelectedVariantId(v.id)}
               className={`rounded-full border px-4 py-2 text-sm transition-colors ${
-                v.id === selectedVariantId ? "border-accent bg-accent-soft text-accent" : "border-border text-text-primary/70"
+                v.id === selectedVariantId
+                  ? "border-accent bg-accent-soft text-accent"
+                  : "border-border text-text-primary/70 hover:border-accent hover:bg-accent-soft/50 hover:text-accent"
               }`}
             >
               {v.label} — $ {v.price.toLocaleString("es-AR")}
