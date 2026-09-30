@@ -1,0 +1,189 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { Heart, Minus, Plus, MessageCircle, Utensils, WashingMachine } from "lucide-react";
+import type { ProductDetail } from "@/lib/mock-data";
+import { useCart, parseWeightKg } from "@/lib/cart-context";
+import { useLang } from "@/lib/i18n";
+import { toggleFavoriteAction } from "@/lib/actions/favorites";
+
+const collectionTextColor: Record<string, string> = {
+  cristalina: "text-collection-cristalina",
+  floating: "text-collection-floating",
+  grrr: "text-collection-grrr",
+};
+
+export function ProductPurchasePanel({ product, initialFavorited = false }: { product: ProductDetail; initialFavorited?: boolean }) {
+  const [qty, setQty] = useState(1);
+  const [favorited, setFavorited] = useState(initialFavorited);
+  const [added, setAdded] = useState(false);
+  const [pending, startTransition] = useTransition();
+  const { add } = useCart();
+  const { t } = useLang();
+  const variants = product.variants ?? [];
+  const [selectedVariantId, setSelectedVariantId] = useState(variants[0]?.id);
+  const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
+  const displayPrice = selectedVariant?.price ?? product.price;
+  const selectedInStock = selectedVariant ? selectedVariant.inStock !== false : product.inStock;
+
+  const handleFavorite = () => {
+    setFavorited((f) => !f); // optimista
+    startTransition(async () => {
+      try {
+        await toggleFavoriteAction(product.slug);
+      } catch {
+        setFavorited((f) => !f); // revertir si falla (p. ej. sin sesión)
+      }
+    });
+  };
+
+  const handleAdd = () => {
+    if (!selectedVariant) return;
+    add(
+      {
+        variantId: selectedVariant.id,
+        slug: product.slug,
+        name: product.name,
+        variantLabel: selectedVariant.label,
+        price: selectedVariant.price,
+        imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
+      },
+      qty,
+      parseWeightKg(selectedVariant.label)
+    );
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1800);
+  };
+
+  return (
+    <div className="min-w-0">
+      <p className={`mb-1 text-h3 uppercase tracking-wide ${collectionTextColor[product.collection.slug] ?? "text-accent"}`}>{product.collection.name}</p>
+      <h1 className="mb-2 text-h1 lg:text-h1-lg">{product.name}</h1>
+      <p className="mb-4 text-body-lg text-text-primary/80">{product.shortDescription}</p>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
+          <Utensils size={14} /> Apto para vajilla y alimentos
+        </span>
+        <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
+          <WashingMachine size={14} /> Apto lavavajillas
+        </span>
+      </div>
+      <p className="mb-6 flex items-baseline gap-3 text-h2">
+        <span>$ {displayPrice.toLocaleString("es-AR")} {product.currency}</span>
+        {(selectedVariant?.compareAtPrice ?? product.compareAtPrice) && (
+          <span className="text-lg text-text-secondary line-through">
+            $ {(selectedVariant?.compareAtPrice ?? product.compareAtPrice)!.toLocaleString("es-AR")}
+          </span>
+        )}
+      </p>
+
+      {variants.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {variants.map((v) => (
+            <button
+              key={v.id}
+              type="button"
+              onClick={() => setSelectedVariantId(v.id)}
+              className={`rounded-full border px-4 py-2 text-sm transition-colors ${
+                v.id === selectedVariantId ? "border-accent bg-accent-soft text-accent" : "border-border text-text-primary/70"
+              }`}
+            >
+              {v.label} — $ {v.price.toLocaleString("es-AR")}
+              {v.inStock === false ? " (agotado)" : ""}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {!selectedInStock ? (
+        <span className="mb-6 inline-block rounded-full bg-status-error/10 px-3 py-1 text-sm text-status-error">
+          Agotado por el momento — escribinos por WhatsApp y te avisamos cuando vuelva
+        </span>
+      ) : (
+        <div className="mb-6 flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center rounded-full border border-border-strong">
+            <button
+              aria-label="Restar"
+              className="flex h-10 w-10 items-center justify-center"
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+            >
+              <Minus size={14} />
+            </button>
+            <span className="w-6 text-center text-sm">{qty}</span>
+            <button
+              aria-label="Sumar"
+              className="flex h-10 w-10 items-center justify-center"
+              onClick={() => setQty((q) => q + 1)}
+            >
+              <Plus size={14} />
+            </button>
+          </div>
+
+          <button
+            onClick={handleAdd}
+            className="min-w-0 flex-1 rounded-full bg-accent px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+          >
+            {added ? "✓" : t("agregarAlCarrito")}
+          </button>
+
+          <button
+            aria-label="Agregar a favoritos"
+            onClick={handleFavorite}
+            disabled={pending}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-strong disabled:opacity-60"
+          >
+            <Heart size={18} fill={favorited ? "currentColor" : "none"} className={favorited ? "text-accent" : ""} />
+          </button>
+        </div>
+      )}
+
+      <a
+        href={`https://wa.me/5491127379589?text=${encodeURIComponent(`Hola! Quiero pedir el esmalte ${product.name}`)}`}
+        target="_blank"
+        rel="noreferrer"
+        className="mt-3 flex items-center justify-center gap-2 rounded-full border border-border-strong py-3 text-sm font-medium transition-colors hover:bg-surface-muted"
+      >
+        <MessageCircle size={16} /> Pedido rápido por WhatsApp
+      </a>
+
+      {product.description && (
+        <details className="mb-3 border-t border-border py-4" open>
+          <summary className="cursor-pointer text-sm font-medium">Descripción</summary>
+          <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-primary/80">{product.description}</p>
+        </details>
+      )}
+
+      <details className="mb-3 border-t border-border py-4" open>
+        <summary className="cursor-pointer text-sm font-medium">Características</summary>
+        <dl className="mt-3 space-y-2">
+          {product.attributes.map((a) => (
+            <div key={a.label} className="flex justify-between text-sm">
+              <dt className="text-text-secondary">{a.label}</dt>
+              <dd className="text-right font-medium">{a.value}</dd>
+            </div>
+          ))}
+        </dl>
+      </details>
+
+      <details className="border-t border-b border-border py-4">
+        <summary className="cursor-pointer text-sm font-medium">Instrucciones de aplicación</summary>
+        <div className="mt-3 whitespace-pre-line rounded-md bg-surface-muted p-4 text-sm leading-relaxed text-text-primary/80">
+          {product.applicationInstructions}
+        </div>
+
+        <p className="mb-2 mt-4 text-xs font-medium text-text-primary/70">Video: cómo mezclar los esmaltes</p>
+        <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface-muted">
+          <iframe
+            loading="lazy"
+            src="https://www.youtube.com/embed/Gu6luGOo1vA"
+            title="Cómo mezclar los esmaltes SoloGlazes"
+            className="absolute inset-0 h-full w-full"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+          />
+        </div>
+      </details>
+    </div>
+  );
+}
