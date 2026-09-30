@@ -23,7 +23,7 @@ export function QuickOrderForm() {
     try {
       const result = await createQuickOrderAction({
         phone,
-        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
+        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, note: l.note })),
       });
       if (!result.ok) {
         setError(result.error);

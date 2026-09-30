@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Minus, Plus, X, ShoppingBag, ArrowRight } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
 import { QuickOrderForm } from "@/components/catalog/quick-order-form";
+import { PackPruebaPicker } from "@/components/catalog/pack-prueba-picker";
 
 export default function CarritoPage() {
   const { lines, updateQty, remove, subtotal } = useCart();
@@ -77,6 +78,8 @@ export default function CarritoPage() {
                   </div>
                   <span className="text-sm font-medium">$ {(line.price * line.quantity).toLocaleString("es-AR")}</span>
                 </div>
+
+                {line.slug === "pack-prueba-5x200g" && <PackPruebaPicker variantId={line.variantId} initialNote={line.note} />}
               </div>
             </div>
           ))}

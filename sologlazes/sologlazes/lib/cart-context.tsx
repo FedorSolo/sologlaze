@@ -13,6 +13,7 @@ export type CartLine = {
   imageUrl: string;
   quantity: number;
   weightKg?: number;
+  note?: string; // ej: elección de 5 esmaltes del Pack Prueba
 };
 
 export type CartAddItem = {
@@ -28,6 +29,7 @@ type CartContextValue = {
   lines: CartLine[];
   add: (item: CartAddItem, qty?: number, weightKg?: number) => void;
   updateQty: (variantId: string, qty: number) => void;
+  setNote: (variantId: string, note: string) => void;
   remove: (variantId: string) => void;
   clear: () => void;
   subtotal: number;
@@ -94,6 +96,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const setNote = (variantId: string, note: string) =>
+    setLines((prev) => prev.map((l) => (l.variantId === variantId ? { ...l, note } : l)));
+
   const remove = (variantId: string) => setLines((prev) => prev.filter((l) => l.variantId !== variantId));
   const clear = () => setLines([]);
 
@@ -102,7 +107,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const count = lines.reduce((sum, l) => sum + l.quantity, 0);
 
   return (
-    <CartContext.Provider value={{ lines, add, updateQty, remove, clear, subtotal, totalWeightKg, count }}>
+    <CartContext.Provider value={{ lines, add, updateQty, setNote, remove, clear, subtotal, totalWeightKg, count }}>
       {children}
     </CartContext.Provider>
   );

@@ -19,7 +19,7 @@ export default async function HomePage() {
       <h1 className="sr-only">SoloGlazes — Esmaltes cerámicos en polvo, cono 5–6</h1>
 
       {/* Hero — imagen a pantalla completa, sin texto encima */}
-      <section className="relative -mt-px h-[60vh] w-full overflow-hidden lg:h-[85vh]">
+      <section className="relative -mt-px h-[38vh] w-full overflow-hidden lg:h-[52vh]">
         <Image
           src="/images/hero.jpg"
           alt="Pieza cerámica terminada con esmalte SoloGlazes, mostrando textura y brillo tras la cocción"

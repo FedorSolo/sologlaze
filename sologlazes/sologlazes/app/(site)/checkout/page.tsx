@@ -70,7 +70,7 @@ export default function CheckoutPage() {
         shippingLabel: `${shippingOption.label} — ${shippingOption.detail}`,
         shippingCost: shippingOption.price,
         paymentProvider: payment === "MERCADO_PAGO" ? "MERCADO_PAGO" : "MANUAL",
-        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity })),
+        lines: lines.map((l) => ({ variantId: l.variantId, quantity: l.quantity, note: l.note })),
       });
       if (!result.ok) {
         setError(result.error);

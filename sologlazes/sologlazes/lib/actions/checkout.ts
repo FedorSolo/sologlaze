@@ -19,7 +19,7 @@ export type CheckoutInput = {
   shippingLabel: string;
   shippingCost: number;
   paymentProvider: "MERCADO_PAGO" | "MANUAL";
-  lines: { variantId: string; quantity: number }[];
+  lines: { variantId: string; quantity: number; note?: string }[];
 };
 
 export type CheckoutResult =
@@ -74,7 +74,14 @@ export async function createOrderAction(input: CheckoutInput): Promise<CheckoutR
   const total = subtotal + input.shippingCost;
 
   const contactNote = `Nombre: ${input.name} · Tel: ${input.phone} · Email: ${input.email}`;
-  const fullComment = input.comment ? `${contactNote}\n\n${input.comment}` : contactNote;
+  const packNotes = input.lines
+    .filter((l) => l.note)
+    .map((l) => {
+      const variant = variants.find((v) => v.id === l.variantId);
+      return `${variant?.product.name ?? "Pack"}: ${l.note!.split("|").join(", ")}`;
+    })
+    .join("\n");
+  const fullComment = [contactNote, packNotes, input.comment].filter(Boolean).join("\n\n");
   const labels = Object.fromEntries(variants.map((v) => [v.id, `${v.product.name} (${v.label})`]));
 
   // Stock + dirección + pedido en UNA transacción: si falta stock no queda nada a medias.

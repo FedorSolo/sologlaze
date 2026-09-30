@@ -7,7 +7,7 @@ import { reserveStock, OutOfStockError } from "@/lib/stock";
 
 export type QuickOrderInput = {
   phone: string;
-  lines: { variantId: string; quantity: number }[];
+  lines: { variantId: string; quantity: number; note?: string }[];
 };
 
 export type QuickOrderResult =
@@ -89,7 +89,15 @@ export async function createQuickOrderAction(input: QuickOrderInput): Promise<Qu
           shippingCost: 0,
           total: subtotal,
           shippingAddressId: address.id,
-          customerComment: `⚡ PEDIDO RÁPIDO — contactar por WhatsApp: ${input.phone}`,
+          customerComment: [
+            `⚡ PEDIDO RÁPIDO — contactar por WhatsApp: ${input.phone}`,
+            ...input.lines
+              .filter((l) => l.note)
+              .map((l) => {
+                const variant = variants.find((v) => v.id === l.variantId);
+                return `${variant?.product.name ?? "Pack"}: ${l.note!.split("|").join(", ")}`;
+              }),
+          ].join("\n"),
           paymentProvider: "MANUAL",
           paymentStatus: "PENDING",
           items: { create: orderItemsData },
