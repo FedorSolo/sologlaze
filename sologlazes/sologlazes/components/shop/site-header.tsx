@@ -63,7 +63,7 @@ export function SiteHeader() {
               src="/images/logo-sologlazes.png"
               alt="SoloGlazes"
               width={220}
-              height={62}
+              height={49}
               className="h-8 w-auto sm:h-9 xl:h-11"
               priority
             />
@@ -139,7 +139,7 @@ export function SiteHeader() {
         <div className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-bg xl:hidden" role="dialog" aria-modal="true" aria-label="Menú">
           <div className="container flex h-16 shrink-0 items-center justify-between">
             <Link href="/" onClick={close} aria-label="SoloGlazes — inicio">
-              <Image src="/images/logo-sologlazes.png" alt="SoloGlazes" width={220} height={62} className="h-8 w-auto" />
+              <Image src="/images/logo-sologlazes.png" alt="SoloGlazes" width={220} height={49} className="h-8 w-auto" />
             </Link>
             <button type="button" aria-label="Cerrar menú" onClick={close} className="-mr-2 p-2">
               <X size={22} />
