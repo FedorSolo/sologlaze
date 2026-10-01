@@ -98,7 +98,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             type="button"
             aria-label={`Agregar ${product.name}${addLabel ? ` (${addLabel})` : ""} al carrito`}
             onClick={handleAdd}
-            className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-full bg-accent text-white transition-colors hover:bg-accent-hover sm:bottom-3 sm:right-3"
+            className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-[50%] bg-accent text-white shadow-md ring-2 ring-white transition-all hover:scale-110 hover:bg-accent-hover hover:shadow-lg sm:bottom-3 sm:right-3"
           >
             {added ? <Check size={18} /> : <Plus size={18} />}
           </button>

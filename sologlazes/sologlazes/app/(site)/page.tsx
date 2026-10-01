@@ -94,6 +94,25 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* Mercado Libre */}
+      <section className="py-16 lg:py-24">
+        <div className="container flex flex-col items-center gap-4 text-center">
+          <p className="text-h3 uppercase tracking-wide text-accent">También en Mercado Libre</p>
+          <h2 className="max-w-2xl text-h2 lg:text-h2-lg">Encontranos en nuestra página oficial de Mercado Libre</h2>
+          <p className="max-w-xl text-body text-text-secondary">
+            Si preferís comprar por Mercado Libre, tenemos nuestra propia página con los mismos esmaltes de siempre.
+          </p>
+          <a
+            href="https://www.mercadolibre.com.ar/pagina/solotu_ceramics#from=share_eshop"
+            target="_blank"
+            rel="noreferrer"
+            className="mt-2 inline-flex items-center gap-2 rounded-[999px] bg-accent px-6 py-3 text-sm text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md"
+          >
+            Ver en Mercado Libre <ArrowRight size={16} />
+          </a>
+        </div>
+      </section>
+
       {/* CTA final */}
       <section className="container pb-24">
         <div className="flex flex-col items-center gap-4 rounded-lg bg-text-primary px-6 py-16 text-center text-bg">

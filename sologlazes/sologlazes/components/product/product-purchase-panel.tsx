@@ -124,9 +124,9 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
 
           <button
             onClick={handleAdd}
-            className="min-w-0 flex-1 rounded-full bg-accent px-3 py-3 text-sm font-medium text-white transition-colors hover:bg-accent-hover"
+            className="min-w-0 flex-1 rounded-[999px] bg-accent px-3 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md"
           >
-            {added ? "✓" : t("agregarAlCarrito")}
+            {added ? "✓ Agregado" : t("agregarAlCarrito")}
           </button>
 
           <button
@@ -147,6 +147,15 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
         className="mt-3 flex items-center justify-center gap-2 rounded-full border border-border-strong py-3 text-sm font-medium transition-colors hover:bg-surface-muted"
       >
         <MessageCircle size={16} /> Pedido rápido por WhatsApp
+      </a>
+
+      <a
+        href="https://www.mercadolibre.com.ar/pagina/solotu_ceramics#from=share_eshop"
+        target="_blank"
+        rel="noreferrer"
+        className="mt-2 flex items-center justify-center gap-2 py-2 text-sm text-text-secondary underline-offset-4 transition-colors hover:text-accent-hover hover:underline"
+      >
+        También disponible en nuestra página de Mercado Libre
       </a>
 
       {product.description && (
