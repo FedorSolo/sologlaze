@@ -71,14 +71,14 @@ export function SiteHeader() {
 
           <nav className="hidden items-center gap-8 whitespace-nowrap text-sm xl:flex">
             <div className="group relative">
-              <Link href="/catalogo" className="transition-colors hover:text-accent">{t("catalogo")}</Link>
+              <Link href="/catalogo" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("catalogo")}</Link>
               <div className="absolute left-0 top-full hidden pt-4 group-hover:block">
                 <div className="flex gap-2 rounded-lg border border-border bg-surface p-3">
                   {collections.map((c) => (
                     <Link
                       key={c.slug}
                       href={`/catalogo/${c.slug}`}
-                      className="whitespace-nowrap rounded-md px-4 py-2 text-sm transition-all duration-150 hover:scale-105 hover:bg-surface-muted hover:text-accent"
+                      className="whitespace-nowrap px-3 py-2 text-sm underline-offset-4 transition-colors hover:text-accent-hover hover:underline"
                     >
                       {c.name}
                     </Link>
@@ -86,10 +86,10 @@ export function SiteHeader() {
                 </div>
               </div>
             </div>
-            <Link href="/guia" className="transition-colors hover:text-accent">{t("guia")}</Link>
-            <Link href="/nosotros" className="transition-colors hover:text-accent">{t("nosotros")}</Link>
-            <Link href="/coworking" className="transition-colors hover:text-accent">Coworking</Link>
-            <Link href="/esmaltes-para-gres" className="transition-colors hover:text-accent">{t("gres")}</Link>
+            <Link href="/guia" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("guia")}</Link>
+            <Link href="/nosotros" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("nosotros")}</Link>
+            <Link href="/coworking" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">Coworking</Link>
+            <Link href="/esmaltes-para-gres" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("gres")}</Link>
           </nav>
 
           <div className="flex items-center gap-1">

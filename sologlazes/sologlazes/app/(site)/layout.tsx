@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
+import { Inter } from "next/font/google";
 import "../globals.css";
 import { SiteHeader } from "@/components/shop/site-header";
 import { SiteFooter } from "@/components/shop/site-footer";
@@ -7,10 +7,12 @@ import { CartProvider } from "@/lib/cart-context";
 import { AuthSessionProvider } from "@/lib/session-provider";
 import { LangProvider } from "@/lib/i18n";
 
-const interTight = Inter_Tight({
+// MAKR usa Sohne (de pago) — Inter es la alternativa que la propia guía de estilo sugiere.
+// Solo peso 400: la jerarquía se lee en tamaño y tracking, nunca en negrita.
+const interDisplay = Inter({
   subsets: ["latin"],
   variable: "--font-display",
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500"],
   display: "swap",
 });
 
@@ -43,7 +45,7 @@ const organizationJsonLd = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="es" className={interTight.variable}>
+    <html lang="es" className={interDisplay.variable}>
       <body>
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }} />
         <LangProvider>

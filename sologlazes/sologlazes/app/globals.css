@@ -14,7 +14,7 @@
 
   body {
     @apply bg-bg text-text-primary font-sans antialiased;
-    letter-spacing: -0.01em;
+    letter-spacing: 0.01em;
     /* Red de seguridad: nada debe generar scroll horizontal en el celular (clip no rompe el header sticky). */
     overflow-x: clip;
   }
