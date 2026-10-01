@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "../globals.css";
 import { SiteHeader } from "@/components/shop/site-header";
 import { SiteFooter } from "@/components/shop/site-footer";
+import { WhatsappFloat } from "@/components/shared/whatsapp-float";
 import { CartProvider } from "@/lib/cart-context";
 import { AuthSessionProvider } from "@/lib/session-provider";
 import { LangProvider } from "@/lib/i18n";
@@ -54,6 +55,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SiteHeader />
               <main>{children}</main>
               <SiteFooter />
+              <WhatsappFloat />
             </CartProvider>
           </AuthSessionProvider>
         </LangProvider>
