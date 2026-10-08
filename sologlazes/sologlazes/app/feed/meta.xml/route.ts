@@ -43,7 +43,11 @@ export async function GET() {
     const photos = p.images.map((i) => i.url).filter((u) => u && !u.includes("placeholder"));
     if (photos.length === 0 || p.variants.length === 0) continue;
 
-    const description = `${p.shortDescription} ${p.description}`.replace(/\s+/g, " ").trim().slice(0, 4900);
+    // La descripción larga suele empezar con la corta: no se repite el comienzo.
+    const short = p.shortDescription.trim();
+    const long = p.description.trim();
+    const joined = long.startsWith(short) || short.startsWith(long) ? (long.length >= short.length ? long : short) : `${short} ${long}`;
+    const description = joined.replace(/\s+/g, " ").trim().slice(0, 4900);
     const link = `${BASE_URL}/producto/${p.slug}`;
 
     for (const v of p.variants) {
@@ -53,7 +57,7 @@ export async function GET() {
       items.push(`    <item>
       <g:id>${esc(v.sku)}</g:id>
       <g:item_group_id>${esc(p.slug)}</g:item_group_id>
-      <g:title>${esc(`${p.name} — ${v.label}`)}</g:title>
+      <g:title>${esc(p.variants.length > 1 ? `${p.name} — ${v.label}` : p.name)}</g:title>
       <g:description>${esc(description)}</g:description>
       <g:link>${esc(link)}</g:link>
       <g:image_link>${esc(absolute(photos[0]))}</g:image_link>${photos
