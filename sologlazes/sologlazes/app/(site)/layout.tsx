@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import { SiteHeader } from "@/components/shop/site-header";
 import { SiteFooter } from "@/components/shop/site-footer";
@@ -10,10 +10,10 @@ import { LangProvider } from "@/lib/i18n";
 
 // MAKR usa Sohne (de pago) — Inter es la alternativa que la propia guía de estilo sugiere.
 // Solo peso 400: la jerarquía se lee en tamaño y tracking, nunca en negrita.
-const interDisplay = Inter({
-  subsets: ["latin"],
+const interDisplay = localFont({
+  src: "../fonts/InterVariable.woff2",
   variable: "--font-display",
-  weight: ["400", "500"],
+  weight: "100 900",
   display: "swap",
 });
 

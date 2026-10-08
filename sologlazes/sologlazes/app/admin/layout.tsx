@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Inter_Tight } from "next/font/google";
+import localFont from "next/font/local";
 import "../globals.css";
 import { AdminNav } from "@/components/admin/admin-nav";
 
-const interTight = Inter_Tight({ subsets: ["latin"], variable: "--font-display", weight: ["300", "400", "500", "600", "700"], display: "swap" });
+const interTight = localFont({ src: "../fonts/InterVariable.woff2", variable: "--font-display", weight: "100 900", display: "swap" });
 
 // Root layout propio para /admin: sin SiteHeader/SiteFooter del sitio público
 // (antes vivía anidado bajo el layout público — ver README, ya resuelto).
