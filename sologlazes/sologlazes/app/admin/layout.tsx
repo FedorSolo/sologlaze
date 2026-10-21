@@ -3,7 +3,8 @@ import localFont from "next/font/local";
 import "../globals.css";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { IgnoreMe } from "@/components/admin/ignore-me";
-import { requireAdmin } from "@/lib/admin-guard";
+import { AdminLogin } from "@/components/admin/admin-login";
+import { getAdminState } from "@/lib/admin-guard";
 
 const interTight = localFont({ src: "../fonts/InterVariable.woff2", variable: "--font-display", weight: "100 900", display: "swap" });
 
@@ -15,7 +16,19 @@ export const metadata: Metadata = {
 };
 
 export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
-  await requireAdmin();
+  // Sin sesión de administrador NO se muestra el panel (ni se renderizan las páginas de adentro):
+  // solo la pantalla de ingreso con el video.
+  const state = await getAdminState();
+  if (state !== "admin") {
+    return (
+      <html lang="es" className={interTight.variable}>
+        <body>
+          <AdminLogin forbidden={state === "not-admin"} />
+        </body>
+      </html>
+    );
+  }
+
   return (
     <html lang="es" className={interTight.variable}>
       <body>

@@ -18,3 +18,12 @@ export async function assertAdmin() {
   const user = id ? await prisma.user.findUnique({ where: { id }, select: { role: true } }) : null;
   if (user?.role !== "ADMIN") throw new Error("Solo administradores.");
 }
+
+// Estado de quien abre /admin: sin sesión, con sesión pero sin permisos, o administrador.
+export async function getAdminState(): Promise<"anonymous" | "not-admin" | "admin"> {
+  const session = await auth();
+  const id = session?.user?.id;
+  if (!id) return "anonymous";
+  const user = await prisma.user.findUnique({ where: { id }, select: { role: true } });
+  return user?.role === "ADMIN" ? "admin" : "not-admin";
+}

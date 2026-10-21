@@ -68,11 +68,19 @@ export async function CollectionView({ slug, lang }: { slug: string; lang: Lang 
     },
   };
 
+  const faqLd = seo && {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    inLanguage: lang,
+    mainEntity: seo.faq.map((f) => ({ "@type": "Question", name: f.q, acceptedAnswer: { "@type": "Answer", text: f.a } })),
+  };
+
   return (
     <div className="container py-10 lg:py-14">
       {lang !== "es" && <HtmlLang lang={lang} />}
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(listLd) }} />
+      {seo && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqLd) }} />}
       <nav aria-label={tr(lang, "breadcrumb")} className="mb-4 text-sm text-text-secondary">
         <Link href={hrefFor(lang, "/")}>{tr(lang, "inicio")}</Link> / <Link href={hrefFor(lang, "/catalogo")}>{tr(lang, "catalogo")}</Link> / {collection.name}
       </nav>
@@ -81,13 +89,34 @@ export async function CollectionView({ slug, lang }: { slug: string; lang: Lang 
       <CatalogBrowser products={products} filterGroups={filterGroups} />
 
       {seo && (
-        <section className="mt-16 max-w-2xl border-t border-border pt-8 text-sm text-text-secondary">
-          <h2 className="mb-3 text-h3 text-text-primary">{seo.heading}</h2>
+        <section className="mx-auto mt-16 max-w-3xl border-t border-border pt-10 text-center">
+          <h2 className="mb-5 text-h2 text-text-primary">{seo.heading}</h2>
           {seo.paragraphs.map((p, i) => (
-            <p key={i} className="mb-3 leading-relaxed">
+            <p key={i} className="mb-4 text-body leading-relaxed text-text-secondary">
               {p}
             </p>
           ))}
+
+          <h3 className="mb-6 mt-12 text-h3 text-text-primary">{seo.faqHeading}</h3>
+          <dl className="mx-auto grid gap-4 text-left sm:grid-cols-2">
+            {seo.faq.map((f, i) => (
+              <div key={i} className="rounded-lg border border-border bg-surface p-5">
+                <dt className="mb-2 text-body font-medium text-text-primary">{f.q}</dt>
+                <dd className="text-sm leading-relaxed text-text-secondary">{f.a}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <nav aria-label={tr(lang, "nuestrasLineas")} className="mt-10 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+            <span className="text-text-secondary">{tr(lang, "nuestrasLineas")}:</span>
+            {Object.keys(collectionSeoText)
+              .filter((k) => k !== collection.slug)
+              .map((k) => (
+                <Link key={k} href={hrefFor(lang, `/catalogo/${k}`)} className="text-accent hover:underline">
+                  {collectionSeoText[k][lang].heading}
+                </Link>
+              ))}
+          </nav>
         </section>
       )}
     </div>
