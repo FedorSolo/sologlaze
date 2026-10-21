@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
+import { track } from "@/lib/analytics-client";
 
 // Cada línea del carrito es una PRESENTACIÓN concreta (peso) de un producto, identificada por variantId.
 // Así 0.5 kg y 1 kg del mismo esmalte son líneas distintas, cada una con su precio.
@@ -81,6 +82,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const add: CartContextValue["add"] = (item, qty = 1, weightKg) => {
     if (!item.variantId) return;
+    track("add_to_cart", { label: item.slug, value: Math.round(item.price * qty) });
     setLines((prev) => {
       const existing = prev.find((l) => l.variantId === item.variantId);
       if (existing) {

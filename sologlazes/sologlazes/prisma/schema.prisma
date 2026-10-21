@@ -409,3 +409,33 @@ model EmailLog {
   status    EmailStatus
   sentAt    DateTime    @default(now())
 }
+
+// ───────────────────────── Analítica propia ─────────────────────────
+// Un registro por visita a una página (type = "pageview") o por acción (type = "event").
+// No guarda IP ni datos personales: solo un id anónimo del navegador y la sesión.
+
+model AnalyticsEvent {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  type        String // pageview | event
+  name        String? // add_to_cart | purchase | whatsapp_click | ml_click | instagram_click
+  path        String
+  label       String? // producto, número de pedido, página donde se hizo clic
+  value       Int? // monto en pesos (carrito / pedido)
+  source      String? // Google, Instagram, Directo…
+  utmMedium   String?
+  utmCampaign String?
+  device      String?
+  browser     String?
+  country     String?
+  region      String?
+  city        String?
+  visitorId   String
+  sessionId   String
+
+  @@index([createdAt])
+  @@index([type, createdAt])
+  @@index([name, createdAt])
+  @@index([visitorId])
+  @@index([sessionId])
+}

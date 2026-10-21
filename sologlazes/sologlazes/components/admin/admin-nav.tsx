@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Star, Upload, BarChart3, LogOut } from "lucide-react";
+import { LayoutDashboard, Package, FolderTree, ShoppingCart, Users, Star, Upload, BarChart3, Activity, LogOut } from "lucide-react";
 
 const items = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard, exact: true },
@@ -13,6 +13,7 @@ const items = [
   { href: "/admin/usuarios", label: "Usuarios", icon: Users },
   { href: "/admin/resenas", label: "Reseñas", icon: Star },
   { href: "/admin/media", label: "Subir imagen", icon: Upload },
+  { href: "/admin/analitica", label: "Analítica", icon: Activity },
   { href: "/admin/estadisticas", label: "Estadísticas", icon: BarChart3 },
 ];
 

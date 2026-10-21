@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
 import { AdminNav } from "@/components/admin/admin-nav";
+import { IgnoreMe } from "@/components/admin/ignore-me";
+import { requireAdmin } from "@/lib/admin-guard";
 
 const interTight = localFont({ src: "../fonts/InterVariable.woff2", variable: "--font-display", weight: "100 900", display: "swap" });
 
@@ -12,10 +14,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminRootLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminRootLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
   return (
     <html lang="es" className={interTight.variable}>
       <body>
+        <IgnoreMe />
         <div className="flex min-h-screen flex-col lg:flex-row">
           <AdminNav />
           <div className="min-w-0 flex-1 p-4 sm:p-6 lg:p-8">{children}</div>

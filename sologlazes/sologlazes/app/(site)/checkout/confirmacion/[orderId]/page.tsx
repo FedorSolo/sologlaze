@@ -3,6 +3,7 @@ import Link from "next/link";
 import { CheckCircle2, Clock, AlertCircle, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
+import { TrackPurchase } from "@/components/shared/track-purchase";
 
 export const metadata: Metadata = { title: "Estado de tu pedido", robots: { index: false } };
 
@@ -15,7 +16,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
   // Puede llegar el número (SG-123456) o el id interno (cuando se vuelve desde Mercado Pago).
   const order = await prisma.order.findFirst({
     where: { OR: [{ id: orderId }, { orderNumber: orderId }] },
-    select: { id: true, orderNumber: true, userId: true, paymentProvider: true, paymentStatus: true },
+    select: { id: true, orderNumber: true, userId: true, paymentProvider: true, paymentStatus: true, total: true },
   });
   const session = await auth();
 
@@ -60,6 +61,7 @@ export default async function OrderConfirmationPage({ params, searchParams }: Pa
 
   return (
     <div className="container flex flex-col items-center gap-4 py-16 text-center lg:py-24">
+      {order && <TrackPurchase orderNumber={order.orderNumber} total={Number(order.total)} />}
       {content.icon}
       <h1 className="max-w-md text-h1">{content.title}</h1>
       <p className="text-text-secondary">
