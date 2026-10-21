@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Payment } from "mercadopago";
 import { mpClient } from "@/lib/mercadopago";
 import { prisma } from "@/lib/prisma";
+import { notifyTelegramPayment } from "@/lib/telegram";
 
 // Mercado Pago llama a esta URL automáticamente cuando cambia el estado de un pago.
 // Configurar notification_url ya la manda automáticamente la preferencia creada en checkout.ts,
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
           note: `Mercado Pago: pago ${paymentInfo.status} (id ${paymentId})`,
         },
       });
+      await notifyTelegramPayment(orderId, newStatus);
     }
 
     return NextResponse.json({ received: true });
