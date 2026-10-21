@@ -4,6 +4,8 @@ import { useMemo, useState } from "react";
 import { PackageSearch } from "lucide-react";
 import { CatalogFilters } from "@/components/catalog/catalog-filters";
 import { ProductCard, type ProductCardData } from "@/components/shop/product-card";
+import { useLang } from "@/lib/i18n";
+import { plural } from "@/lib/i18n-dict";
 
 type FilterState = Record<string, string[]>;
 type CatalogProduct = ProductCardData & { temperature: string };
@@ -22,6 +24,7 @@ export function CatalogBrowser({
   products: CatalogProduct[];
   filterGroups: FilterGroup[];
 }) {
+  const { t, lang } = useLang();
   const [active, setActive] = useState<FilterState>({});
   const [sort, setSort] = useState<"popular" | "price-asc" | "price-desc">("popular");
 
@@ -59,28 +62,28 @@ export function CatalogBrowser({
 
       <div className="flex-1">
         <div className="mb-6 flex items-center justify-between">
-          <p className="text-sm text-text-secondary">{filtered.length} productos</p>
+          <p className="text-sm text-text-secondary">{filtered.length} {plural(lang, filtered.length, { one: t("productCountOne"), few: lang === "ru" ? "товара" : undefined, many: t("productCountMany") })}</p>
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as typeof sort)}
             className="rounded-full border border-border-strong bg-surface px-4 py-2 text-sm"
-            aria-label="Ordenar por"
+            aria-label={t("sortBy")}
           >
-            <option value="popular">Más populares</option>
-            <option value="price-asc">Precio: menor a mayor</option>
-            <option value="price-desc">Precio: mayor a menor</option>
+            <option value="popular">{t("sortPopular")}</option>
+            <option value="price-asc">{t("sortPriceAsc")}</option>
+            <option value="price-desc">{t("sortPriceDesc")}</option>
           </select>
         </div>
 
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-24 text-center">
             <PackageSearch size={32} className="text-text-secondary" />
-            <p className="text-h3">Sin resultados con estos filtros</p>
+            <p className="text-h3">{t("noResults")}</p>
             <p className="max-w-xs text-sm text-text-secondary">
-              Probá con otra combinación de temperatura, superficie o efecto.
+              {t("noResultsHint")}
             </p>
             <button onClick={clear} className="mt-2 rounded-full bg-accent px-5 py-2.5 text-sm text-white">
-              Limpiar filtros
+              {t("clearFilters")}
             </button>
           </div>
         ) : (

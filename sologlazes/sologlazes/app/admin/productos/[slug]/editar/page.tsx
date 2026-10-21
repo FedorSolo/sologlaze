@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getCollections } from "@/lib/queries/collections";
@@ -22,7 +23,12 @@ export default async function EditProductPage({ params }: { params: Promise<{ sl
 
   return (
     <div className="max-w-xl">
-      <h1 className="mb-6 text-h1">Editar: {product.name}</h1>
+      <h1 className="mb-2 text-h1">Editar: {product.name}</h1>
+      <p className="mb-6 text-sm">
+        <Link href={`/admin/productos/${product.slug}/traducciones`} className="text-accent hover:underline">
+          Traducciones al inglés y ruso →
+        </Link>
+      </p>
       <EditProductForm
         productId={product.id}
         collections={collections.map((c) => ({ id: c.id, name: c.name }))}

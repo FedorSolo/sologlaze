@@ -35,14 +35,30 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image" },
 };
 
+// Negocio con dirección física (taller + coworking) y tienda online: Google lo usa para el panel
+// de la marca y las búsquedas locales ("esmaltes cerámicos Buenos Aires").
 const organizationJsonLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": ["Organization", "Store"],
+  "@id": "https://sologlazes.com.ar/#organization",
   name: "SoloGlazes",
+  alternateName: "SoloGlazes Argentina",
   url: "https://sologlazes.com.ar",
   logo: "https://sologlazes.com.ar/images/logo-sologlazes.png",
+  image: "https://sologlazes.com.ar/images/hero.jpg",
+  description: "Esmaltes cerámicos en polvo para cono 5–6 (1200 °C), con modificadores incluidos. Taller y coworking para ceramistas en Buenos Aires.",
+  telephone: "+54 9 11 2737 9589",
+  priceRange: "$$",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: "Federico Lacroze 1658",
+    addressLocality: "Buenos Aires",
+    addressRegion: "CABA",
+    addressCountry: "AR",
+  },
   areaServed: "AR",
-  sameAs: ["https://instagram.com/sologlazes.arg", "https://wa.me/5491127379589"],
+  availableLanguage: ["es", "en", "ru"],
+  sameAs: ["https://instagram.com/sologlazes.arg", "https://wa.me/5491127379589", "https://www.mercadolibre.com.ar/pagina/solotu_ceramics"],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

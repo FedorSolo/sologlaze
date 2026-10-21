@@ -6,6 +6,9 @@
 export type ProductDetail = {
   slug: string;
   name: string;
+  nameEs?: string; // nombre en español (para carrito y pedidos cuando la ficha está en otro idioma)
+  metaTitle?: string;
+  metaDescription?: string;
   collection: { slug: "cristalina" | "floating" | "grrr"; name: string };
   price: number;
   compareAtPrice?: number;

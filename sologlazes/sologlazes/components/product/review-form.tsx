@@ -3,17 +3,19 @@
 import { useActionState, useState } from "react";
 import { Star } from "lucide-react";
 import { submitReviewAction, type SubmitReviewState } from "@/lib/actions/reviews";
+import { useLang } from "@/lib/i18n";
 
 const initialState: SubmitReviewState = {};
 
 export function ReviewForm({ productSlug }: { productSlug: string }) {
   const [state, formAction, pending] = useActionState(submitReviewAction, initialState);
   const [rating, setRating] = useState(5);
+  const { t } = useLang();
 
   if (state.success) {
     return (
       <p className="rounded-md bg-status-success/10 p-4 text-sm text-status-success">
-        ¡Gracias! Tu reseña quedó enviada y se va a publicar apenas la revisemos.
+        {t("thanksReview")}
       </p>
     );
   }
@@ -23,7 +25,7 @@ export function ReviewForm({ productSlug }: { productSlug: string }) {
       <input type="hidden" name="productSlug" value={productSlug} />
       <input type="hidden" name="rating" value={rating} />
 
-      <span className="mb-2 block text-sm font-medium">Dejá tu reseña</span>
+      <span className="mb-2 block text-sm font-medium">{t("leaveReview")}</span>
 
       <div className="mb-3 flex gap-1">
         {[1, 2, 3, 4, 5].map((n) => (
@@ -31,7 +33,7 @@ export function ReviewForm({ productSlug }: { productSlug: string }) {
             key={n}
             type="button"
             onClick={() => setRating(n)}
-            aria-label={`Calificar con ${n} estrellas`}
+            aria-label={t("rateWith", { n })}
             className="text-status-warning"
           >
             <Star size={22} fill={n <= rating ? "currentColor" : "none"} />
@@ -43,7 +45,7 @@ export function ReviewForm({ productSlug }: { productSlug: string }) {
         name="comment"
         required
         rows={3}
-        placeholder="¿Cómo te fue con este esmalte?"
+        placeholder={t("reviewPlaceholder")}
         className="mb-3 w-full rounded-sm border border-border p-3 text-sm focus:border-accent"
       />
 
@@ -54,7 +56,7 @@ export function ReviewForm({ productSlug }: { productSlug: string }) {
         disabled={pending}
         className="rounded-full bg-accent px-5 py-2 text-sm font-medium text-white transition-colors hover:bg-accent-hover disabled:opacity-60"
       >
-        {pending ? "Enviando..." : "Enviar reseña"}
+        {pending ? t("sending") : t("sendReview")}
       </button>
     </form>
   );

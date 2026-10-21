@@ -26,11 +26,13 @@ const nextConfig: NextConfig = {
       // Catálogo / colecciones
       { source: "/collections/all", destination: "/catalogo", permanent: true },
       { source: "/collections/:slug", destination: "/catalogo/:slug", permanent: true },
-      { source: "/en/collections/:slug*", destination: "/catalogo/:slug*", permanent: true },
+      // El sitio nuevo SÍ tiene páginas /en/…: los links viejos en inglés van a la versión en inglés.
+      { source: "/en/collections/all", destination: "/en/catalogo", permanent: true },
+      { source: "/en/collections/:slug", destination: "/en/catalogo/:slug", permanent: true },
 
       // Fichas de producto (el slug de Shopify coincide con el slug actual)
       { source: "/products/:slug", destination: "/producto/:slug", permanent: true },
-      { source: "/en/products/:slug", destination: "/producto/:slug", permanent: true },
+      { source: "/en/products/:slug", destination: "/en/producto/:slug", permanent: true },
 
       // Páginas sueltas con equivalente directo en el sitio nuevo
       { source: "/policies/terms-of-service", destination: "/terminos", permanent: true },
@@ -43,8 +45,11 @@ const nextConfig: NextConfig = {
       { source: "/blogs/:category/:slug", destination: "/nosotros", permanent: true },
       { source: "/blogs/:category", destination: "/nosotros", permanent: true },
 
-      // Cualquier otra ruta con prefijo /en/ que no haya matcheado arriba — se saca el prefijo
-      { source: "/en/:path*", destination: "/:path*", permanent: true },
+      // Rutas viejas de Shopify con prefijo /en/ que no existen en el sitio nuevo — se saca el prefijo.
+      // (No se usa un comodín /en/:path*: ahora /en/catalogo, /en/producto/… son páginas reales.)
+      { source: "/en/:section(pages|policies|blogs)/:path*", destination: "/:section/:path*", permanent: true },
+      { source: "/en/cart", destination: "/carrito", permanent: true },
+      { source: "/en/search", destination: "/buscar", permanent: true },
     ];
   },
 };

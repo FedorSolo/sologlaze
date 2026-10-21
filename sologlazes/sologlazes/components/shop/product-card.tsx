@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useState } from "react";
 import { Check, Plus } from "lucide-react";
 import { useCart, parseWeightKg } from "@/lib/cart-context";
+import { useLang } from "@/lib/i18n";
 
 export type ProductCardData = {
   id: string;
@@ -21,6 +22,7 @@ export type ProductCardData = {
   imageUrl: string;
   imageAltUrl?: string;
   imageAlt: string;
+  nameEs?: string;
   inStock: boolean;
   stockQuantity?: number;
 };
@@ -35,7 +37,8 @@ export function ProductCard({ product }: { product: ProductCardData }) {
   const [hovered, setHovered] = useState(false);
   const [added, setAdded] = useState(false);
   const { add } = useCart();
-  const href = `/producto/${product.slug}`;
+  const { t, href: localHref } = useLang();
+  const href = localHref(`/producto/${product.slug}`);
 
   // Si hay más de un peso, el comprador puede elegir cuál agregar sin entrar a la ficha.
   const hasWeights = !!product.variantPrices && product.variantPrices.length > 1;
@@ -50,7 +53,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
       {
         variantId: selectedVariantId,
         slug: product.slug,
-        name: product.name,
+        name: product.nameEs ?? product.name, // el carrito queda en español
         variantLabel: addLabel,
         price: addPrice,
         imageUrl: product.imageUrl,
@@ -87,7 +90,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
             </span>
             {!product.inStock && (
               <span className="absolute bottom-2 left-2 rounded-full bg-text-primary px-2.5 py-1 text-caption uppercase text-surface sm:bottom-3 sm:left-3">
-                Agotado
+                {t("agotado")}
               </span>
             )}
           </div>
@@ -96,7 +99,7 @@ export function ProductCard({ product }: { product: ProductCardData }) {
         {canBuy && (
           <button
             type="button"
-            aria-label={`Agregar ${product.name}${addLabel ? ` (${addLabel})` : ""} al carrito`}
+            aria-label={t("addAria", { name: `${product.name}${addLabel ? ` (${addLabel})` : ""}` })}
             onClick={handleAdd}
             className="absolute bottom-2 right-2 flex h-10 w-10 items-center justify-center rounded-[50%] bg-accent text-white shadow-md ring-2 ring-white transition-all hover:scale-110 hover:bg-accent-hover hover:shadow-lg sm:bottom-3 sm:right-3"
           >

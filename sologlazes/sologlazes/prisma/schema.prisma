@@ -84,6 +84,7 @@ model Collection {
   isPremium     Boolean   @default(false)
   sortOrder     Int       @default(0)
   products      Product[]
+  translations CollectionTranslation[]
 }
 
 model Product {
@@ -105,6 +106,7 @@ model Product {
   createdAt               DateTime  @default(now())
   updatedAt               DateTime  @updatedAt
 
+  translations    ProductTranslation[]
   variants        ProductVariant[]
   images          ProductImage[]
   videos          ProductVideo[]
@@ -438,4 +440,36 @@ model AnalyticsEvent {
   @@index([name, createdAt])
   @@index([visitorId])
   @@index([sessionId])
+}
+
+// ───────────────────────── Traducciones (EN / RU) ─────────────────────────
+// El texto base vive en Product / Collection (español). Acá solo van las otras lenguas;
+// si falta una fila o un campo, el sitio muestra el español.
+
+model ProductTranslation {
+  id                      String  @id @default(cuid())
+  productId               String
+  product                 Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  lang                    String // en | ru
+  name                    String
+  shortDescription        String
+  description             String
+  applicationInstructions String
+  metaTitle               String?
+  metaDescription         String?
+  updatedAt               DateTime @updatedAt
+
+  @@unique([productId, lang])
+}
+
+model CollectionTranslation {
+  id           String     @id @default(cuid())
+  collectionId String
+  collection   Collection @relation(fields: [collectionId], references: [id], onDelete: Cascade)
+  lang         String // en | ru
+  name         String
+  description  String
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([collectionId, lang])
 }

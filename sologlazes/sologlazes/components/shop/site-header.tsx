@@ -3,30 +3,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
 import { Search, Heart, User, ShoppingBag, Menu, X, LogOut, MessageCircle } from "lucide-react";
 import { useCart } from "@/lib/cart-context";
-import { useLang, type Lang } from "@/lib/i18n";
+import { useLang } from "@/lib/i18n";
+import { COLLECTION_NAMES, LANGS, LANG_NAMES, altPaths } from "@/lib/i18n-dict";
 import { LanguageSwitcher } from "@/components/shop/language-switcher";
 
-const collections = [
-  { slug: "cristalina", name: "Cristalina" },
-  { slug: "floating", name: "Floating" },
-  { slug: "grrr", name: "GRRR" },
-  { slug: "pack-prueba", name: "Pack Prueba" },
-];
-
-const langs: { code: Lang; label: string }[] = [
-  { code: "es", label: "Español" },
-  { code: "en", label: "English" },
-  { code: "ru", label: "Русский" },
-];
+const collectionSlugs = ["cristalina", "floating", "grrr", "pack-prueba"];
 
 export function SiteHeader() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { count } = useCart();
   const { data: session, status } = useSession();
-  const { t, lang, setLang } = useLang();
+  const { t, lang, href } = useLang();
+  const pathname = usePathname();
+  const alts = altPaths(pathname ?? "/");
+  const collections = collectionSlugs.map((slug) => ({ slug, name: COLLECTION_NAMES[slug][lang] }));
 
   // Con el menú abierto: se bloquea el scroll de la página de atrás y Escape lo cierra.
   useEffect(() => {
@@ -51,14 +45,14 @@ export function SiteHeader() {
           <button
             type="button"
             className="-ml-2 p-2 text-text-primary xl:hidden"
-            aria-label="Abrir menú"
+            aria-label={t("abrirMenu")}
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(true)}
           >
             <Menu size={22} />
           </button>
 
-          <Link href="/" className="flex shrink-0 items-center" aria-label="SoloGlazes — inicio">
+          <Link href={href("/")} className="flex shrink-0 items-center" aria-label={t("logoAria")}>
             <Image
               src="/images/logo-sologlazes.png"
               alt="SoloGlazes"
@@ -71,13 +65,13 @@ export function SiteHeader() {
 
           <nav className="hidden items-center gap-8 whitespace-nowrap text-sm xl:flex">
             <div className="group relative">
-              <Link href="/catalogo" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("catalogo")}</Link>
+              <Link href={href("/catalogo")} className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("catalogo")}</Link>
               <div className="absolute left-0 top-full hidden pt-4 group-hover:block">
                 <div className="flex gap-2 rounded-lg border border-border bg-surface p-3">
                   {collections.map((c) => (
                     <Link
                       key={c.slug}
-                      href={`/catalogo/${c.slug}`}
+                      href={href(`/catalogo/${c.slug}`)}
                       className="whitespace-nowrap px-3 py-2 text-sm underline-offset-4 transition-colors hover:text-accent-hover hover:underline"
                     >
                       {c.name}
@@ -88,7 +82,7 @@ export function SiteHeader() {
             </div>
             <Link href="/guia" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("guia")}</Link>
             <Link href="/nosotros" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("nosotros")}</Link>
-            <Link href="/coworking" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">Coworking</Link>
+            <Link href="/coworking" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("coworking")}</Link>
             <Link href="/esmaltes-para-gres" className="underline-offset-4 transition-colors hover:text-accent-hover hover:underline">{t("gres")}</Link>
           </nav>
 
@@ -96,8 +90,8 @@ export function SiteHeader() {
             <div className="hidden sm:mr-2 sm:flex">
               <LanguageSwitcher />
             </div>
-            <IconButton href="/buscar" label="Buscar"><Search size={18} /></IconButton>
-            <IconButton href="/cuenta/favoritos" label="Favoritos" className="hidden sm:inline-flex"><Heart size={18} /></IconButton>
+            <IconButton href="/buscar" label={t("buscar")}><Search size={18} /></IconButton>
+            <IconButton href="/cuenta/favoritos" label={t("favoritos")} className="hidden sm:inline-flex"><Heart size={18} /></IconButton>
             {status === "authenticated" ? (
               <div className="group relative hidden sm:inline-flex">
                 <Link
@@ -112,14 +106,14 @@ export function SiteHeader() {
                     onClick={() => signOut({ callbackUrl: "/" })}
                     className="flex items-center gap-2 whitespace-nowrap rounded-md border border-border bg-surface px-4 py-2.5 text-sm hover:bg-surface-muted"
                   >
-                    <LogOut size={14} /> Cerrar sesión
+                    <LogOut size={14} /> {t("cerrarSesion")}
                   </button>
                 </div>
               </div>
             ) : (
-              <IconButton href="/ingresar" label="Ingresar" className="hidden sm:inline-flex"><User size={18} /></IconButton>
+              <IconButton href="/ingresar" label={t("ingresar")} className="hidden sm:inline-flex"><User size={18} /></IconButton>
             )}
-            <IconButton href="/carrito" label="Carrito">
+            <IconButton href="/carrito" label={t("carrito")}>
               <span className="relative">
                 <ShoppingBag size={18} />
                 {count > 0 && (
@@ -136,62 +130,63 @@ export function SiteHeader() {
       {/* Menú del celular — FUERA del <header>: el backdrop-blur del header haría que este panel
           quedara recortado a la altura de la barra en vez de cubrir toda la pantalla. */}
       {menuOpen && (
-        <div className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-bg xl:hidden" role="dialog" aria-modal="true" aria-label="Menú">
+        <div className="fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-bg xl:hidden" role="dialog" aria-modal="true" aria-label={t("menu")}>
           <div className="container flex h-16 shrink-0 items-center justify-between">
-            <Link href="/" onClick={close} aria-label="SoloGlazes — inicio">
+            <Link href={href("/")} onClick={close} aria-label={t("logoAria")}>
               <Image src="/images/logo-sologlazes.png" alt="SoloGlazes" width={220} height={49} className="h-8 w-auto" />
             </Link>
-            <button type="button" aria-label="Cerrar menú" onClick={close} className="-mr-2 p-2">
+            <button type="button" aria-label={t("cerrarMenu")} onClick={close} className="-mr-2 p-2">
               <X size={22} />
             </button>
           </div>
 
           <nav className="container flex flex-1 flex-col pb-10 pt-2">
-            <p className="pb-1 pt-2 text-caption uppercase tracking-wide text-text-secondary">Catálogo</p>
-            <Link href="/catalogo" className={mobileLink} onClick={close}>Ver todos los esmaltes</Link>
+            <p className="pb-1 pt-2 text-caption uppercase tracking-wide text-text-secondary">{t("catalogo")}</p>
+            <Link href={href("/catalogo")} className={mobileLink} onClick={close}>{t("verTodos")}</Link>
             {collections.map((c) => (
-              <Link key={c.slug} href={`/catalogo/${c.slug}`} className={`${mobileLink} pl-4 text-base`} onClick={close}>
+              <Link key={c.slug} href={href(`/catalogo/${c.slug}`)} className={`${mobileLink} pl-4 text-base`} onClick={close}>
                 {c.name}
               </Link>
             ))}
 
-            <p className="pb-1 pt-6 text-caption uppercase tracking-wide text-text-secondary">Más</p>
+            <p className="pb-1 pt-6 text-caption uppercase tracking-wide text-text-secondary">{t("mas")}</p>
             <Link href="/guia" className={mobileLink} onClick={close}>{t("guia")}</Link>
             <Link href="/nosotros" className={mobileLink} onClick={close}>{t("nosotros")}</Link>
-            <Link href="/coworking" className={mobileLink} onClick={close}>Coworking</Link>
+            <Link href="/coworking" className={mobileLink} onClick={close}>{t("coworking")}</Link>
             <Link href="/esmaltes-para-gres" className={mobileLink} onClick={close}>{t("gres")}</Link>
-            <Link href="/contacto" className={mobileLink} onClick={close}>Contacto</Link>
+            <Link href="/contacto" className={mobileLink} onClick={close}>{t("contacto")}</Link>
 
-            <p className="pb-1 pt-6 text-caption uppercase tracking-wide text-text-secondary">Mi cuenta</p>
+            <p className="pb-1 pt-6 text-caption uppercase tracking-wide text-text-secondary">{t("miCuenta")}</p>
             {status === "authenticated" ? (
               <>
-                <Link href="/cuenta" className={mobileLink} onClick={close}>Mi cuenta</Link>
-                <Link href="/cuenta/favoritos" className={mobileLink} onClick={close}>Favoritos</Link>
+                <Link href="/cuenta" className={mobileLink} onClick={close}>{t("miCuenta")}</Link>
+                <Link href="/cuenta/favoritos" className={mobileLink} onClick={close}>{t("favoritos")}</Link>
                 <button
                   type="button"
                   onClick={() => signOut({ callbackUrl: "/" })}
                   className="flex items-center gap-2 border-b border-border py-3.5 text-left text-lg"
                 >
-                  <LogOut size={18} /> Cerrar sesión
+                  <LogOut size={18} /> {t("cerrarSesion")}
                 </button>
               </>
             ) : (
-              <Link href="/ingresar" className={mobileLink} onClick={close}>Ingresar o registrarme</Link>
+              <Link href="/ingresar" className={mobileLink} onClick={close}>{t("ingresarRegistrarme")}</Link>
             )}
 
-            <p className="pb-2 pt-6 text-caption uppercase tracking-wide text-text-secondary">Idioma</p>
+            <p className="pb-2 pt-6 text-caption uppercase tracking-wide text-text-secondary">{t("idioma")}</p>
             <div className="flex gap-2">
-              {langs.map((l) => (
-                <button
-                  key={l.code}
-                  type="button"
-                  onClick={() => setLang(l.code)}
-                  className={`flex-1 rounded-full border px-3 py-2.5 text-sm transition-colors ${
-                    lang === l.code ? "border-accent bg-accent text-white" : "border-border hover:bg-surface-muted"
+              {LANGS.map((code) => (
+                <Link
+                  key={code}
+                  href={alts[code]}
+                  hrefLang={code}
+                  onClick={close}
+                  className={`flex-1 rounded-full border px-3 py-2.5 text-center text-sm transition-colors ${
+                    lang === code ? "border-accent bg-accent text-white" : "border-border hover:bg-surface-muted"
                   }`}
                 >
-                  {l.label}
-                </button>
+                  {LANG_NAMES[code]}
+                </Link>
               ))}
             </div>
 
@@ -201,7 +196,7 @@ export function SiteHeader() {
               rel="noreferrer"
               className="mt-8 inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white"
             >
-              <MessageCircle size={16} /> Escribinos por WhatsApp
+              <MessageCircle size={16} /> {t("whatsappUs")}
             </a>
           </nav>
         </div>

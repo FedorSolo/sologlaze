@@ -4,8 +4,10 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { PlayCircle, ZoomIn, X } from "lucide-react";
 import type { ProductDetail } from "@/lib/mock-data";
+import { useLang } from "@/lib/i18n";
 
 export function ProductGallery({ product }: { product: ProductDetail }) {
+  const { t } = useLang();
   const media = [
     ...product.images.map((img) => ({ kind: "image" as const, ...img })),
     ...(product.videoUrl ? [{ kind: "video" as const, url: product.videoUrl, alt: `Video de ${product.name}` }] : []),
@@ -30,7 +32,7 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
   if (media.length === 0) {
     return (
       <div className="relative aspect-[4/5] w-full overflow-hidden rounded-lg bg-surface-muted">
-        <Image src="/images/placeholder.jpg" alt={`${product.name} — foto próximamente`} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
+        <Image src="/images/placeholder.jpg" alt={`${product.name} — ${t("photoSoon")}`} fill sizes="(min-width: 1024px) 45vw, 100vw" className="object-cover" />
       </div>
     );
   }
@@ -50,7 +52,7 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
               className={`relative h-20 w-16 shrink-0 overflow-hidden rounded-md border transition-colors ${
                 i === activeIndex ? "border-accent" : "border-border hover:border-border-strong"
               }`}
-              aria-label={`Ver ${m.kind === "video" ? "video" : "imagen"} ${i + 1}`}
+              aria-label={t(m.kind === "video" ? "viewVideo" : "viewImage", { n: i + 1 })}
               aria-current={i === activeIndex}
             >
               {m.kind === "video" ? (
@@ -76,7 +78,7 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
                 type="button"
                 onClick={() => setZoomOpen(true)}
                 className="absolute inset-0 z-10 cursor-zoom-in"
-                aria-label="Ampliar foto"
+                aria-label={t("zoom")}
               />
               <Image
                 src={active.url}
@@ -87,7 +89,7 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
                 className="object-cover transition-transform duration-300 lg:group-hover:scale-105"
               />
               <span className="pointer-events-none absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-surface/90 px-3 py-1.5 text-xs text-text-primary opacity-100 transition-opacity lg:opacity-0 lg:group-hover:opacity-100">
-                <ZoomIn size={14} /> Ampliar
+                <ZoomIn size={14} /> {t("zoom").split(" ")[0]}
               </span>
             </>
           )}
@@ -99,13 +101,13 @@ export function ProductGallery({ product }: { product: ProductDetail }) {
         <div
           role="dialog"
           aria-modal="true"
-          aria-label="Foto ampliada"
+          aria-label={t("zoomed")}
           className="fixed inset-0 z-[70] flex items-center justify-center bg-black/90 p-4"
           onClick={() => setZoomOpen(false)}
         >
           <button
             type="button"
-            aria-label="Cerrar"
+            aria-label={t("close")}
             onClick={() => setZoomOpen(false)}
             className="absolute right-4 top-4 z-10 flex h-11 w-11 items-center justify-center rounded-full bg-white/15 text-white hover:bg-white/25"
           >

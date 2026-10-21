@@ -139,6 +139,9 @@ export function AdminProductRow({ slug, name, collectionName, variants }: Props)
             <button onClick={startEdit} className="flex items-center gap-1 text-text-secondary hover:text-accent" aria-label="Edición rápida">
               <Pencil size={13} />
             </button>
+            <Link href={`/admin/productos/${slug}/traducciones`} className="text-text-secondary hover:text-accent" title="Traducciones EN / RU">
+              EN/RU
+            </Link>
             <Link href={`/admin/productos/${slug}/editar`} className="text-accent">
               Editar
             </Link>

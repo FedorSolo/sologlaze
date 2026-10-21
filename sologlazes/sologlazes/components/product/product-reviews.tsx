@@ -1,13 +1,13 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
 import type { ProductDetail } from "@/lib/mock-data";
+import type { Lang } from "@/lib/i18n-dict";
+import { plural, tr } from "@/lib/i18n-dict";
 
-export function ProductReviews({ reviews }: { reviews: ProductDetail["reviews"] }) {
+export function ProductReviews({ reviews, lang = "es" }: { reviews: ProductDetail["reviews"]; lang?: Lang }) {
   if (reviews.length === 0) {
     return (
-      <p className="text-sm text-text-secondary">
-        Todavía no hay reseñas para este producto. ¿Ya lo probaste? Contanos cómo te fue.
-      </p>
+      <p className="text-sm text-text-secondary">{tr(lang, "noReviews")}</p>
     );
   }
 
@@ -22,7 +22,7 @@ export function ProductReviews({ reviews }: { reviews: ProductDetail["reviews"] 
           ))}
         </div>
         <span className="text-sm text-text-secondary">
-          {avg.toFixed(1)} · {reviews.length} reseña{reviews.length > 1 ? "s" : ""}
+          {avg.toFixed(1)} · {reviews.length} {plural(lang, reviews.length, { one: tr(lang, "reviewOne"), many: tr(lang, "reviewMany"), few: lang === "ru" ? "отзыва" : undefined })}
         </span>
       </div>
 

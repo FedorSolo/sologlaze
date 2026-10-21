@@ -20,6 +20,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
   const [pending, startTransition] = useTransition();
   const { add } = useCart();
   const { t } = useLang();
+  const cartName = product.nameEs ?? product.name;
   const variants = product.variants ?? [];
   const [selectedVariantId, setSelectedVariantId] = useState(variants[0]?.id);
   const selectedVariant = variants.find((v) => v.id === selectedVariantId) ?? variants[0];
@@ -43,7 +44,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       {
         variantId: selectedVariant.id,
         slug: product.slug,
-        name: product.name,
+        name: cartName,
         variantLabel: selectedVariant.label,
         price: selectedVariant.price,
         imageUrl: product.images[0]?.url ?? "/images/placeholder.jpg",
@@ -63,10 +64,10 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
 
       <div className="mb-4 flex flex-wrap gap-2">
         <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
-          <Utensils size={14} /> Apto para vajilla y alimentos
+          <Utensils size={14} /> {t("foodSafe")}
         </span>
         <span className="flex items-center gap-1.5 rounded-full bg-accent-soft px-3 py-1.5 text-xs font-medium text-accent">
-          <WashingMachine size={14} /> Apto lavavajillas
+          <WashingMachine size={14} /> {t("dishwasher")}
         </span>
       </div>
       <p className="mb-6 flex items-baseline gap-3 text-h2">
@@ -92,7 +93,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
               }`}
             >
               {v.label} — $ {v.price.toLocaleString("es-AR")}
-              {v.inStock === false ? " (agotado)" : ""}
+              {v.inStock === false ? ` ${t("agotadoShort")}` : ""}
             </button>
           ))}
         </div>
@@ -100,13 +101,13 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
 
       {!selectedInStock ? (
         <span className="mb-6 inline-block rounded-full bg-status-error/10 px-3 py-1 text-sm text-status-error">
-          Agotado por el momento — escribinos por WhatsApp y te avisamos cuando vuelva
+          {t("agotadoMsg")}
         </span>
       ) : (
         <div className="mb-6 flex items-center gap-3 sm:gap-4">
           <div className="flex items-center rounded-full border border-border-strong">
             <button
-              aria-label="Restar"
+              aria-label={t("subtract")}
               className="flex h-10 w-10 items-center justify-center"
               onClick={() => setQty((q) => Math.max(1, q - 1))}
             >
@@ -114,7 +115,7 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
             </button>
             <span className="w-6 text-center text-sm">{qty}</span>
             <button
-              aria-label="Sumar"
+              aria-label={t("add")}
               className="flex h-10 w-10 items-center justify-center"
               onClick={() => setQty((q) => q + 1)}
             >
@@ -126,11 +127,11 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
             onClick={handleAdd}
             className="min-w-0 flex-1 rounded-[999px] bg-accent px-3 py-3 text-sm font-medium text-white shadow-sm transition-all hover:bg-accent-hover hover:shadow-md"
           >
-            {added ? "✓ Agregado" : t("agregarAlCarrito")}
+            {added ? t("agregado") : t("agregarAlCarrito")}
           </button>
 
           <button
-            aria-label="Agregar a favoritos"
+            aria-label={t("addFavorite")}
             onClick={handleFavorite}
             disabled={pending}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-border-strong disabled:opacity-60"
@@ -141,12 +142,12 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       )}
 
       <a
-        href={`https://wa.me/5491127379589?text=${encodeURIComponent(`Hola! Quiero pedir el esmalte ${product.name}`)}`}
+        href={`https://wa.me/5491127379589?text=${encodeURIComponent(t("waMsg", { name: product.name }))}`}
         target="_blank"
         rel="noreferrer"
         className="mt-3 flex items-center justify-center gap-2 rounded-full border border-border-strong py-3 text-sm font-medium transition-colors hover:bg-surface-muted"
       >
-        <MessageCircle size={16} /> Pedido rápido por WhatsApp
+        <MessageCircle size={16} /> {t("quickOrder")}
       </a>
 
       <a
@@ -155,18 +156,18 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
         rel="noreferrer"
         className="mt-2 flex items-center justify-center gap-2 py-2 text-sm text-text-secondary underline-offset-4 transition-colors hover:text-accent-hover hover:underline"
       >
-        También disponible en nuestra página de Mercado Libre
+        {t("mlAlso")}
       </a>
 
       {product.description && (
         <details className="mb-3 border-t border-border py-4" open>
-          <summary className="cursor-pointer text-sm font-medium">Descripción</summary>
+          <summary className="cursor-pointer text-sm font-medium">{t("description")}</summary>
           <p className="mt-3 whitespace-pre-line text-sm leading-relaxed text-text-primary/80">{product.description}</p>
         </details>
       )}
 
       <details className="mb-3 border-t border-border py-4" open>
-        <summary className="cursor-pointer text-sm font-medium">Características</summary>
+        <summary className="cursor-pointer text-sm font-medium">{t("features")}</summary>
         <dl className="mt-3 space-y-2">
           {product.attributes.map((a) => (
             <div key={a.label} className="flex justify-between text-sm">
@@ -178,17 +179,17 @@ export function ProductPurchasePanel({ product, initialFavorited = false }: { pr
       </details>
 
       <details className="border-t border-b border-border py-4">
-        <summary className="cursor-pointer text-sm font-medium">Instrucciones de aplicación</summary>
+        <summary className="cursor-pointer text-sm font-medium">{t("instructions")}</summary>
         <div className="mt-3 whitespace-pre-line rounded-md bg-surface-muted p-4 text-sm leading-relaxed text-text-primary/80">
           {product.applicationInstructions}
         </div>
 
-        <p className="mb-2 mt-4 text-xs font-medium text-text-primary/70">Video: cómo mezclar los esmaltes</p>
+        <p className="mb-2 mt-4 text-xs font-medium text-text-primary/70">{t("mixVideo")}</p>
         <div className="relative aspect-video w-full overflow-hidden rounded-md bg-surface-muted">
           <iframe
             loading="lazy"
             src="https://www.youtube.com/embed/Gu6luGOo1vA"
-            title="Cómo mezclar los esmaltes SoloGlazes"
+            title={t("mixVideoTitle")}
             className="absolute inset-0 h-full w-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

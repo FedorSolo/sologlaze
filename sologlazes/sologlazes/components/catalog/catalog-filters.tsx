@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { useLang } from "@/lib/i18n";
 
 type FilterGroup = { key: string; label: string; options: string[] };
 
@@ -18,6 +19,7 @@ export function CatalogFilters({
   onClear: () => void;
   resultCount: number;
 }) {
+  const { t } = useLang();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
     Object.fromEntries(groups.map((g) => [g.key, true]))
@@ -70,10 +72,10 @@ export function CatalogFilters({
       <aside className="hidden w-64 shrink-0 lg:block">
         <div className="sticky top-24">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-h3">Filtrar</h2>
+            <h2 className="text-h3">{t("filter")}</h2>
             {activeCount > 0 && (
               <button onClick={onClear} className="text-sm text-accent hover:underline">
-                Limpiar ({activeCount})
+                {t("clear")} ({activeCount})
               </button>
             )}
           </div>
@@ -87,7 +89,7 @@ export function CatalogFilters({
         onClick={() => setMobileOpen(true)}
       >
         <SlidersHorizontal size={16} />
-        Filtrar {activeCount > 0 && `(${activeCount})`}
+        {t("filter")} {activeCount > 0 && `(${activeCount})`}
       </button>
 
       {/* Mobile bottom-sheet */}
@@ -96,8 +98,8 @@ export function CatalogFilters({
           <div className="absolute inset-0 bg-text-primary/40" onClick={() => setMobileOpen(false)} />
           <div className="relative max-h-[85dvh] overflow-y-auto rounded-t-lg bg-surface p-6 pb-0">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-h3">Filtrar</h2>
-              <button aria-label="Cerrar" onClick={() => setMobileOpen(false)}>
+              <h2 className="text-h3">{t("filter")}</h2>
+              <button aria-label={t("close")} onClick={() => setMobileOpen(false)}>
                 <X size={20} />
               </button>
             </div>
@@ -105,14 +107,14 @@ export function CatalogFilters({
             <div className="sticky bottom-0 -mx-6 mt-6 flex gap-3 border-t border-border bg-surface p-4">
               {activeCount > 0 && (
                 <button onClick={onClear} className="flex-1 rounded-full border border-border-strong py-3 text-sm">
-                  Limpiar
+                  {t("clear")}
                 </button>
               )}
               <button
                 onClick={() => setMobileOpen(false)}
                 className="flex-1 rounded-full bg-accent py-3 text-sm text-white"
               >
-                Ver {resultCount} resultados
+                {t("viewResults", { n: resultCount })}
               </button>
             </div>
           </div>

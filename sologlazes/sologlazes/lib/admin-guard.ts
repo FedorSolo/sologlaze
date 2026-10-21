@@ -10,3 +10,11 @@ export async function requireAdmin() {
   const user = await prisma.user.findUnique({ where: { id }, select: { role: true } });
   if (user?.role !== "ADMIN") redirect("/");
 }
+
+// Para server actions: lanza un error si quien llama no es administrador (no redirige).
+export async function assertAdmin() {
+  const session = await auth();
+  const id = session?.user?.id;
+  const user = id ? await prisma.user.findUnique({ where: { id }, select: { role: true } }) : null;
+  if (user?.role !== "ADMIN") throw new Error("Solo administradores.");
+}
