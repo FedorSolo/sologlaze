@@ -6,6 +6,7 @@ import { sendOrderConfirmationEmail, sendAdminNewOrderEmail } from "@/lib/email/
 import { mpClient } from "@/lib/mercadopago";
 import { Preference } from "mercadopago";
 import { reserveStock, OutOfStockError } from "@/lib/stock";
+import { notifyTelegramNewOrder } from "@/lib/telegram";
 
 export type CheckoutInput = {
   name: string;
@@ -158,6 +159,8 @@ export async function createOrderAction(input: CheckoutInput): Promise<CheckoutR
   } catch {
     // No bloqueamos el checkout si falla la notificación al admin
   }
+
+  await notifyTelegramNewOrder(order.id);
 
   let mpCheckoutUrl: string | undefined;
   if (input.paymentProvider === "MERCADO_PAGO" && process.env.MERCADOPAGO_ACCESS_TOKEN) {
