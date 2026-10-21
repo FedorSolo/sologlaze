@@ -41,7 +41,7 @@ export async function HomeView({ lang }: { lang: Lang }) {
         <Image src="/images/hero.jpg" alt={t("heroAlt")} fill priority quality={95} sizes="100vw" className="object-cover" />
       </section>
 
-      <section className="container flex flex-col items-center gap-4 py-10 text-center lg:py-14">
+      <section className="container flex flex-col items-center gap-4 py-6 text-center lg:py-8">
         <span className="rounded-full bg-accent-soft px-4 py-1.5 text-caption uppercase tracking-wide text-accent">{t("badge")}</span>
         <div className="flex flex-col gap-3 sm:flex-row">
           <Link href={href("/catalogo")} className="inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3 text-white transition-colors hover:bg-accent-hover">
@@ -54,8 +54,8 @@ export async function HomeView({ lang }: { lang: Lang }) {
       </section>
 
       {/* Colecciones */}
-      <section className="container py-16 lg:py-24">
-        <h2 className="mb-10 text-h2 lg:text-h2-lg">{t("nuestrasLineas")}</h2>
+      <section className="container pb-16 pt-6 lg:pb-24 lg:pt-8">
+        <h2 className="mb-8 text-h2 lg:text-h2-lg">{t("nuestrasLineas")}</h2>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {collections.map((c) => (
             <Link
