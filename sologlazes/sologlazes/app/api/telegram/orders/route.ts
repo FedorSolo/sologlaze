@@ -1,5 +1,6 @@
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
+import { mlStatus, syncMlOrders } from "@/lib/mercadolibre";
 
 // Вкладка «Заказы» в Telegram-приложении «Мастерская».
 // Доступ: только из Telegram (проверка подписи initData токеном TELEGRAM_BOT_TOKEN)
@@ -11,9 +12,11 @@ import { prisma } from "@/lib/prisma";
 //   create  — ручная продажа (Mercado Libre, мастерская, ярмарка…): создаётся обычный заказ
 //             с номером M-xxxxxx, статус DELIVERED, оплата PAID — попадает и в статистику админки
 //   delete  — удалить ручную продажу (только M-…)
+//   mlSync  — подтянуть последние продажи с Mercado Libre
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 const CORS = {
   "Access-Control-Allow-Origin": "*",
@@ -65,7 +68,7 @@ const MANUAL_CHANNELS = ["Mercado Libre", "Мастерская / лично", "
 const MANUAL_TAG = /^\[Вручную · ([^\]]+)\]/;
 const isManual = (o: { orderNumber: string }) => o.orderNumber.startsWith("M-");
 const channelOf = (o: { orderNumber: string; customerComment: string | null }) =>
-  isManual(o) ? (o.customerComment ?? "").match(MANUAL_TAG)?.[1] ?? "Другое" : "Сайт";
+  o.orderNumber.startsWith("ML-") ? "Mercado Libre" : isManual(o) ? (o.customerComment ?? "").match(MANUAL_TAG)?.[1] ?? "Другое" : "Сайт";
 
 // Продажа засчитывается в отчёт, если не отменена/не возвращена и деньги получены
 // (оплата PAID или заказ уже в работе/отправлен/доставлен).
@@ -114,8 +117,11 @@ async function list() {
   }
 
   const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sologlazes.com.ar").replace(/\/$/, "");
+  const ml = await mlStatus().catch(() => ({ configured: false, connected: false, nickname: "", sellerId: "" }));
   return {
-    channels: MANUAL_CHANNELS,
+    // когда ML подключён, его продажи приходят сами — вручную их не добавляем, чтобы не задвоить
+    channels: ml.connected ? MANUAL_CHANNELS.filter((c) => c !== "Mercado Libre") : MANUAL_CHANNELS,
+    ml: { configured: ml.configured, connected: ml.connected, nickname: ml.nickname, connectUrl: `${site.replace("://sologlazes", "://www.sologlazes")}/api/mercadolibre/connect` },
     months: Object.values(months).sort((a, b) => (a.month < b.month ? 1 : -1)),
     orders: orders.map((o) => {
       const a = o.shippingAddress;
@@ -286,6 +292,8 @@ export async function POST(req: Request) {
         return json(await create(body, who));
       case "delete":
         return json(await remove(body));
+      case "mlSync":
+        return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 2 * 3600e3 })) });
       default:
         throw new HttpError(400, "Неизвестное действие");
     }
