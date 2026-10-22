@@ -1,6 +1,4 @@
-import { cookies } from "next/headers";
-import { auth } from "@/lib/auth";
-import { mlConnect, syncMlOrders, verifyState } from "@/lib/mercadolibre";
+import { mlConnect, pkceFromState, syncMlOrders, verifyState } from "@/lib/mercadolibre";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,16 +19,15 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
   const state = url.searchParams.get("state") ?? "";
-  if (!code) return page("Не подключено", "Mercado Libre не передал код. Попробуйте ещё раз: /api/mercadolibre/connect", false);
+  if (!code) return page("Не подключено", "Mercado Libre не передал код. Нажмите «Подключить» в приложении ещё раз.", false);
 
+  // state подписан секретом и содержит ID администратора, открывшего /connect, — сессия здесь не нужна
   const payload = verifyState(state);
-  const session = await auth();
-  const userId = session?.user?.id;
-  if (!payload || !userId || !payload.startsWith(`${userId}:`) || Date.now() - Number(payload.split(":")[1]) > 15 * 60e3) {
-    return page("Не подключено", "Ссылка устарела или вы вышли из админки. Войдите в админку сайта и откройте /api/mercadolibre/connect ещё раз.", false);
+  const [userId, ts] = (payload ?? "").split(":");
+  if (!payload || !userId || Date.now() - Number(ts) > 15 * 60e3) {
+    return page("Не подключено", "Ссылка устарела. Нажмите «Подключить» в приложении ещё раз.", false);
   }
-  const jar = await cookies();
-  const verifier = jar.get("ml_pkce")?.value ?? "";
+  const { verifier } = pkceFromState(state);
 
   try {
     const me = await mlConnect(code, verifier, userId);
@@ -48,6 +45,8 @@ export async function GET(req: Request) {
     );
   } catch (e) {
     console.error("ML connect:", e);
-    return page("Не подключено", esc(e instanceof Error ? e.message : String(e)), false);
+    const msg = e instanceof Error ? e.message : String(e);
+    const hint = /grant/i.test(msg) ? " Код от Mercado Libre одноразовый: не обновляйте эту страницу, а нажмите «Подключить» в приложении ещё раз." : "";
+    return page("Не подключено", esc(msg) + hint, false);
   }
 }

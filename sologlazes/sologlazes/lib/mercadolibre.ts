@@ -32,8 +32,10 @@ export function mlAuthUrl(state: string, codeChallenge: string) {
   return u.toString();
 }
 
-export function pkcePair() {
-  const verifier = crypto.randomBytes(48).toString("base64url");
+// PKCE-ключ выводится из подписанного state, а не хранится в cookie:
+// так подключение не ломается, если браузер (Telegram, другой домен www/без www) не вернул cookie.
+export function pkceFromState(state: string) {
+  const verifier = crypto.createHmac("sha256", process.env.ML_SECRET_KEY ?? "").update(`pkce:${state}`).digest("base64url");
   const challenge = crypto.createHash("sha256").update(verifier).digest("base64url");
   return { verifier, challenge };
 }
