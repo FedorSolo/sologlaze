@@ -103,3 +103,33 @@ export async function notifyTelegramPayment(orderId: string, status: "PAID" | "P
     console.error("notifyTelegramPayment:", err);
   }
 }
+
+/** Продажа на Mercado Libre: новая, оплачена или отменена. Никогда не бросает исключение. */
+export async function notifyTelegramMercadoLibre(orderId: string, kind: "new" | "paid" | "cancelled") {
+  try {
+    const order = await prisma.order.findUnique({ where: { id: orderId }, include: { items: true } });
+    if (!order) return;
+    if (kind !== "new") {
+      const head = kind === "paid" ? "✅ <b>Оплачена продажа на Mercado Libre</b>" : "❌ <b>Отменена продажа на Mercado Libre</b>";
+      await sendTelegram(`${head} <code>${esc(order.orderNumber)}</code> — ${money(order.total)}`, order.id);
+      return;
+    }
+    const items = order.items
+      .map(
+        (i: { productNameSnapshot: string; variantLabelSnapshot: string | null; unitPriceSnapshot: unknown; quantity: number }) =>
+          `• ${esc(i.productNameSnapshot)}${i.variantLabelSnapshot ? ` — ${esc(i.variantLabelSnapshot)}` : ""} × ${i.quantity} = ${money(Number(i.unitPriceSnapshot) * i.quantity)}`,
+      )
+      .join("\n");
+    const lines = [
+      `🟡 <b>Продажа на Mercado Libre</b> <code>${esc(order.orderNumber)}</code>`,
+      "",
+      items,
+      "",
+      `<b>Итого: ${money(order.total)}</b>${order.paymentStatus === "PAID" ? " — оплачено" : " — ждёт оплаты"}`,
+      esc((order.customerComment ?? "").split("\n").slice(1).join("\n")),
+    ];
+    await sendTelegram(lines.join("\n").trim(), order.id);
+  } catch (err) {
+    console.error("notifyTelegramMercadoLibre:", err);
+  }
+}
