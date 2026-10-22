@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { mlStatus, syncMlOrders } from "@/lib/mercadolibre";
+import { parseOrderComment } from "@/lib/order-comment";
 
 // Вкладка «Заказы» в Telegram-приложении «Мастерская».
 // Доступ: только из Telegram (проверка подписи initData токеном TELEGRAM_BOT_TOKEN)
@@ -87,7 +88,11 @@ async function list() {
   const orders = await prisma.order.findMany({
     orderBy: { createdAt: "desc" },
     take: 80,
-    include: { items: true, shippingAddress: true, user: { select: { name: true, email: true, phone: true } } },
+    include: {
+      items: { include: { variant: { select: { product: { select: { slug: true } } } } } },
+      shippingAddress: true,
+      user: { select: { name: true, email: true, phone: true } },
+    },
   });
 
   // сводка за 13 месяцев (текущий и 12 предыдущих)
@@ -154,7 +159,10 @@ async function list() {
           variant: i.variantLabelSnapshot,
           qty: i.quantity,
           price: Number(i.unitPriceSnapshot),
+          slug: i.variant?.product.slug ?? null, // для «Замешать заказ»: по slug находится рецепт
         })),
+        // выбор глазурей в Pack Prueba (по 200 г): [{ product, picks: [{ series, name }] }]
+        packs: manual || o.orderNumber.startsWith("ML-") ? [] : parseOrderComment(o.customerComment).packs,
         adminUrl: `${site}/admin/pedidos/${o.id}`,
       };
     }),
