@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { mlAuthUrl, mlConfigured, pkcePair, signState } from "@/lib/mercadolibre";
+import { mlAuthUrl, mlConfigured, pkceFromState, signState } from "@/lib/mercadolibre";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -21,9 +21,7 @@ export async function GET(req: Request) {
       headers: { "content-type": "text/plain; charset=utf-8" },
     });
   }
-  const { verifier, challenge } = pkcePair();
   const state = signState(`${id}:${Date.now()}`);
-  const res = NextResponse.redirect(mlAuthUrl(state, challenge));
-  res.cookies.set("ml_pkce", verifier, { httpOnly: true, secure: true, sameSite: "lax", path: "/api/mercadolibre", maxAge: 600 });
-  return res;
+  const { challenge } = pkceFromState(state);
+  return NextResponse.redirect(mlAuthUrl(state, challenge));
 }
