@@ -5,6 +5,7 @@ import { StatusPill } from "@/components/admin/status-pill";
 import { ORDER_STATUS, ORDER_STATUS_ORDER } from "@/lib/admin-order-status";
 import { parseOrderComment } from "@/lib/order-comment";
 import { OrdersList } from "@/components/admin/orders-list";
+import { trashedOrderIds } from "@/lib/order-trash";
 
 export const dynamic = "force-dynamic";
 
@@ -12,22 +13,28 @@ const TZ = "America/Argentina/Buenos_Aires";
 
 export default async function AdminPedidosPage({ searchParams }: { searchParams: Promise<{ s?: string }> }) {
   const { s } = await searchParams;
-  const all = (await getAllOrders()).map((raw) => {
+  const [rawOrders, trashed] = await Promise.all([getAllOrders(), trashedOrderIds()]);
+  const everything = rawOrders.map((raw) => {
     const v = toOrderView(raw);
     const c = parseOrderComment(raw.customerComment);
     // Cuenta registrada primero; si compró como invitado, los datos salen del texto del pedido.
     return { ...v, name: v.customerName ?? c.name, email: v.customerEmail ?? c.email, phone: v.customerPhone ?? c.phone };
   });
 
+  // Los pedidos en la papelera no se cuentan ni se muestran en los demás filtros.
+  const all = everything.filter((o) => !trashed.has(o.dbId));
+  const trash = everything.filter((o) => trashed.has(o.dbId));
+
   const counts: Record<string, number> = {};
   for (const o of all) counts[o.status] = (counts[o.status] ?? 0) + 1;
 
-  const active = s && ORDER_STATUS[s] ? s : "ALL";
-  const orders = active === "ALL" ? all : all.filter((o) => o.status === active);
+  const active = s === "TRASH" ? "TRASH" : s && ORDER_STATUS[s] ? s : "ALL";
+  const orders = active === "TRASH" ? trash : active === "ALL" ? all : all.filter((o) => o.status === active);
 
   const tabs = [
     { key: "ALL", label: "Todos", count: all.length, color: "#1C1717" },
     ...ORDER_STATUS_ORDER.filter((k) => counts[k]).map((k) => ({ key: k, label: ORDER_STATUS[k].label, count: counts[k], color: ORDER_STATUS[k].color })),
+    ...(trash.length ? [{ key: "TRASH", label: "🗑 Papelera", count: trash.length, color: "#6B6461" }] : []),
   ];
 
   return (
@@ -53,9 +60,10 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
       </div>
 
       {orders.length === 0 ? (
-        <p className="text-sm text-text-secondary">{all.length === 0 ? "Todavía no hay pedidos." : "No hay pedidos con este estado."}</p>
+        <p className="text-sm text-text-secondary">{active === "TRASH" ? "La papelera está vacía." : all.length === 0 ? "Todavía no hay pedidos." : "No hay pedidos con este estado."}</p>
       ) : (
         <OrdersList
+          trash={active === "TRASH"}
           rows={orders.map((o) => {
             const st = ORDER_STATUS[o.status] ?? ORDER_STATUS.PENDING;
             const date = new Date(o.date);
