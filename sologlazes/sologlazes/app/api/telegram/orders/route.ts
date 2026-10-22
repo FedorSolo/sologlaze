@@ -83,6 +83,21 @@ const money = (v: unknown, name: string, min = 0) => {
   return Math.round(n * 100) / 100;
 };
 const text = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+const r2 = (n: number) => Math.round(n * 100) / 100;
+const fmt = (n: number) => `$${n.toLocaleString("es-AR", { maximumFractionDigits: 2 })}`;
+
+// скидка: { type: "pct" | "amt", value } от суммы base → сумма скидки
+function discountOf(type: unknown, value: unknown, base: number, label: string) {
+  const v = Number(value ?? 0);
+  if (!v) return 0;
+  if (!isFinite(v) || v < 0) throw new HttpError(400, `${label}: неверная скидка`);
+  if (type === "pct") {
+    if (v > 100) throw new HttpError(400, `${label}: скидка больше 100%`);
+    return r2((base * v) / 100);
+  }
+  if (v > base + 0.001) throw new HttpError(400, `${label}: скидка больше суммы`);
+  return r2(v);
+}
 
 async function list() {
   const orders = await prisma.order.findMany({
@@ -205,19 +220,33 @@ async function create(body: Record<string, unknown>, who: string) {
     if (!(qty >= 1 && qty <= 10000)) throw new HttpError(400, `Строка ${idx + 1}: количество — целое число от 1`);
     const name = v ? v.product.name : text(i?.name, 120);
     if (!name) throw new HttpError(400, `Строка ${idx + 1}: выберите товар или впишите название`);
+    const price = money(i?.price, `Строка ${idx + 1}`);
+    // скидка на позицию: в % или суммой на всю строку (цена × кол-во)
+    const lineDiscount = discountOf(i?.discountType, i?.discount, r2(price * qty), `Строка ${idx + 1}`);
     return {
       variantId: v?.id ?? null,
       productNameSnapshot: name,
       variantLabelSnapshot: v ? v.label : text(i?.variant, 60) || null,
-      unitPriceSnapshot: money(i?.price, `Строка ${idx + 1}`),
+      unitPriceSnapshot: price,
       quantity: qty,
+      _discount: lineDiscount,
+      _discountNote: lineDiscount
+        ? `${name}: −${i?.discountType === "pct" ? `${Number(i.discount)}% (${fmt(lineDiscount)})` : fmt(lineDiscount)}`
+        : "",
     };
   });
 
-  const subtotal = Math.round(items.reduce((s: number, i: { unitPriceSnapshot: number; quantity: number }) => s + i.unitPriceSnapshot * i.quantity, 0) * 100) / 100;
+  const subtotal = r2(items.reduce((s: number, i: { unitPriceSnapshot: number; quantity: number }) => s + i.unitPriceSnapshot * i.quantity, 0));
+  const itemsDiscount = r2(items.reduce((s: number, i: { _discount: number }) => s + i._discount, 0));
   const shippingCost = money(body.shippingCost ?? 0, "Доставка");
-  const discount = money(body.discount ?? 0, "Скидка");
-  const total = Math.max(0, Math.round((subtotal + shippingCost - discount) * 100) / 100);
+  // скидка на весь заказ (после скидок на позиции), тоже в % или суммой
+  const orderDiscount = discountOf(body.discountType, body.discount, r2(subtotal - itemsDiscount), "Скидка на заказ");
+  const discount = r2(itemsDiscount + orderDiscount);
+  const total = Math.max(0, r2(subtotal + shippingCost - discount));
+  const discountNotes = [
+    ...items.map((i: { _discountNote: string }) => i._discountNote).filter(Boolean),
+    orderDiscount ? `На заказ: −${body.discountType === "pct" ? `${Number(body.discount)}% (${fmt(orderDiscount)})` : fmt(orderDiscount)}` : "",
+  ].filter(Boolean);
 
   // дата продажи: YYYY-MM-DD (по Буэнос-Айресу), не в будущем; без даты — сейчас
   let createdAt = new Date();
@@ -228,7 +257,7 @@ async function create(body: Record<string, unknown>, who: string) {
   }
 
   const note = text(body.comment, 500);
-  const comment = `[Вручную · ${channel}]${note ? " " + note : ""}\nДобавил(а): ${who}`;
+  const comment = `[Вручную · ${channel}]${note ? " " + note : ""}${discountNotes.length ? `\nСкидки: ${discountNotes.join("; ")}` : ""}\nДобавил(а): ${who}`;
 
   const address = await prisma.address.create({
     data: { label: "Продажа вручную", street: "-", number: "", city: "-", province: "-", postalCode: "-" },
@@ -250,7 +279,7 @@ async function create(body: Record<string, unknown>, who: string) {
           paymentProvider: "MANUAL",
           paymentStatus: "PAID",
           createdAt,
-          items: { create: items },
+          items: { create: items.map(({ _discount, _discountNote, ...it }: any) => it) },
           statusHistory: { create: { status: "DELIVERED", changedBy: who, note: `Продажа добавлена вручную (${channel}) из Telegram` } },
         },
       });
@@ -262,14 +291,16 @@ async function create(body: Record<string, unknown>, who: string) {
   return { ok: true, number: order.orderNumber };
 }
 
-async function remove(body: Record<string, unknown>) {
+// «Удалить» ручную продажу = отменить (CANCELLED): из отчёта пропадает, но её можно восстановить.
+async function remove(body: Record<string, unknown>, who: string, restore = false) {
   const id = text(body.id, 40);
-  const order = await prisma.order.findUnique({ where: { id }, select: { id: true, orderNumber: true, shippingAddressId: true } });
+  const order = await prisma.order.findUnique({ where: { id }, select: { id: true, orderNumber: true, status: true } });
   if (!order) throw new HttpError(404, "Продажа не найдена");
-  if (!isManual(order)) throw new HttpError(403, "Из приложения можно удалить только ручные продажи (M-…). Заказы с сайта — в админке.");
-  await prisma.$transaction(async (tx) => {
-    await tx.order.delete({ where: { id: order.id } });
-    await tx.address.deleteMany({ where: { id: order.shippingAddressId, userId: null, orders: { none: {} } } });
+  if (!isManual(order)) throw new HttpError(403, "Из приложения можно удалять только ручные продажи (M-…). Заказы с сайта — в админке.");
+  const status = restore ? "DELIVERED" : "CANCELLED";
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { status, statusHistory: { create: { status, changedBy: who, note: restore ? "Восстановлена из Telegram" : "Удалена (отменена) из Telegram" } } },
   });
   return { ok: true };
 }
@@ -299,7 +330,9 @@ export async function POST(req: Request) {
       case "create":
         return json(await create(body, who));
       case "delete":
-        return json(await remove(body));
+        return json(await remove(body, who));
+      case "restore":
+        return json(await remove(body, who, true));
       case "mlSync":
         return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 2 * 3600e3 })) });
       default:
