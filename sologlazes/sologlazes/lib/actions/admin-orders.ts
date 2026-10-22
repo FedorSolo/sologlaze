@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sendOrderShippedEmail, sendOrderDeliveredEmail } from "@/lib/email/send";
 import { reserveStock, restoreStock, OutOfStockError } from "@/lib/stock";
+import { assertAdmin } from "@/lib/admin-guard";
 
 const VALID_STATUSES = ["PENDING", "PAID", "PROCESSING", "SHIPPED", "DELIVERED", "CANCELLED", "REFUNDED"] as const;
 
@@ -136,4 +137,24 @@ export async function adminCreateReviewAction(
   revalidatePath("/admin/resenas");
   revalidatePath(`/producto/${productSlug}`);
   return { success: true };
+}
+
+// Borra pedidos definitivamente (items, historial y logs de email se borran en cascada).
+// No toca el stock: para devolver unidades, primero cancelá el pedido y después eliminalo.
+export async function deleteOrdersAction(ids: string[]): Promise<{ deleted: number }> {
+  await assertAdmin();
+  const clean = Array.from(new Set(ids.filter((i) => typeof i === "string" && i)));
+  if (clean.length === 0) return { deleted: 0 };
+
+  const orders = await prisma.order.findMany({ where: { id: { in: clean } }, select: { id: true, shippingAddressId: true } });
+  const addressIds = Array.from(new Set(orders.map((o) => o.shippingAddressId)));
+
+  await prisma.$transaction(async (tx) => {
+    await tx.order.deleteMany({ where: { id: { in: orders.map((o) => o.id) } } });
+    // Las direcciones de compradores invitados (sin cuenta) quedarían huérfanas: se borran si ya nadie las usa.
+    await tx.address.deleteMany({ where: { id: { in: addressIds }, userId: null, orders: { none: {} } } });
+  });
+
+  revalidatePath("/admin/pedidos");
+  return { deleted: orders.length };
 }

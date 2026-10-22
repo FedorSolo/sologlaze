@@ -4,6 +4,7 @@ import { getAllOrders, toOrderView } from "@/lib/queries/orders";
 import { StatusPill } from "@/components/admin/status-pill";
 import { ORDER_STATUS, ORDER_STATUS_ORDER } from "@/lib/admin-order-status";
 import { parseOrderComment } from "@/lib/order-comment";
+import { OrdersList } from "@/components/admin/orders-list";
 
 export const dynamic = "force-dynamic";
 
@@ -54,16 +55,15 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
       {orders.length === 0 ? (
         <p className="text-sm text-text-secondary">{all.length === 0 ? "Todavía no hay pedidos." : "No hay pedidos con este estado."}</p>
       ) : (
-        <div className="space-y-2.5">
-          {orders.map((o) => {
+        <OrdersList
+          rows={orders.map((o) => {
             const st = ORDER_STATUS[o.status] ?? ORDER_STATUS.PENDING;
             const date = new Date(o.date);
             const first = o.items[0];
             const more = o.items.length - 1;
             const cancelled = o.status === "CANCELLED" || o.status === "REFUNDED";
-            return (
+            const node = (
               <Link
-                key={o.dbId}
                 href={`/admin/pedidos/${o.dbId}`}
                 className="group grid items-start gap-x-5 gap-y-3 rounded-lg border border-border p-4 transition-shadow hover:shadow-md md:grid-cols-2 xl:grid-cols-[130px_1.2fr_1.2fr_1fr_130px_16px]"
                 style={{ borderLeft: `6px solid ${st.color}`, background: st.tint, opacity: cancelled ? 0.8 : 1 }}
@@ -121,8 +121,9 @@ export default async function AdminPedidosPage({ searchParams }: { searchParams:
                 <ChevronRight size={16} className="hidden self-center text-text-secondary transition-transform group-hover:translate-x-0.5 xl:block" />
               </Link>
             );
+            return { id: o.dbId, label: o.id, node };
           })}
-        </div>
+        />
       )}
     </div>
   );
