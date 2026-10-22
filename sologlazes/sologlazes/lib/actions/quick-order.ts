@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/lib/auth";
 import { sendAdminNewOrderEmail } from "@/lib/email/send";
 import { reserveStock, OutOfStockError } from "@/lib/stock";
+import { notifyTelegramNewOrder } from "@/lib/telegram";
 
 export type QuickOrderInput = {
   phone: string;
@@ -127,6 +128,8 @@ export async function createQuickOrderAction(input: QuickOrderInput): Promise<Qu
   } catch {
     // No bloqueamos el flujo si falla la notificación
   }
+
+  await notifyTelegramNewOrder(order.id, { quick: true });
 
   return { ok: true, orderNumber: order.orderNumber, whatsappUrl };
 }
