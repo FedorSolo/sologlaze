@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/auth";
+import { moveToTrash, restoreFromTrash, purgeFromTrash, tracksStock } from "@/lib/order-trash";
 import { sendOrderShippedEmail, sendOrderDeliveredEmail } from "@/lib/email/send";
 import { reserveStock, restoreStock, OutOfStockError } from "@/lib/stock";
 import { assertAdmin } from "@/lib/admin-guard";
@@ -30,7 +32,10 @@ export async function updateOrderStatusAction(formData: FormData) {
 
   const order = await prisma.$transaction(async (tx) => {
     // Cancelar un pedido devuelve las unidades al stock; reactivarlo las vuelve a descontar.
-    if (!wasCancelled && willBeCancelled) {
+    // Ручные продажи (M-…) и Mercado Libre (ML-…) склад не списывали — их статус остатки не трогает.
+    if (!tracksStock(previous.orderNumber)) {
+      // nada
+    } else if (!wasCancelled && willBeCancelled) {
       await restoreStock(tx, previous.items);
     } else if (wasCancelled && !willBeCancelled) {
       const labels = Object.fromEntries(
@@ -139,22 +144,29 @@ export async function adminCreateReviewAction(
   return { success: true };
 }
 
-// Borra pedidos definitivamente (items, historial y logs de email se borran en cascada).
-// No toca el stock: para devolver unidades, primero cancelá el pedido y después eliminalo.
+// «Eliminar» = mover a la papelera (estado CANCELLED + nota en el historial). Se puede restaurar.
 export async function deleteOrdersAction(ids: string[]): Promise<{ deleted: number }> {
   await assertAdmin();
   const clean = Array.from(new Set(ids.filter((i) => typeof i === "string" && i)));
   if (clean.length === 0) return { deleted: 0 };
-
-  const orders = await prisma.order.findMany({ where: { id: { in: clean } }, select: { id: true, shippingAddressId: true } });
-  const addressIds = Array.from(new Set(orders.map((o) => o.shippingAddressId)));
-
-  await prisma.$transaction(async (tx) => {
-    await tx.order.deleteMany({ where: { id: { in: orders.map((o) => o.id) } } });
-    // Las direcciones de compradores invitados (sin cuenta) quedarían huérfanas: se borran si ya nadie las usa.
-    await tx.address.deleteMany({ where: { id: { in: addressIds }, userId: null, orders: { none: {} } } });
-  });
-
+  const session = await auth();
+  const n = await moveToTrash(clean, session?.user?.email ?? "admin");
   revalidatePath("/admin/pedidos");
-  return { deleted: orders.length };
+  return { deleted: n };
+}
+
+export async function restoreOrdersAction(ids: string[]): Promise<{ restored: number }> {
+  await assertAdmin();
+  const session = await auth();
+  const n = await restoreFromTrash(ids.filter((i) => typeof i === "string" && i), session?.user?.email ?? "admin");
+  revalidatePath("/admin/pedidos");
+  return { restored: n };
+}
+
+// Borra definitivamente (solo pedidos que ya están en la papelera).
+export async function purgeOrdersAction(ids: string[]): Promise<{ deleted: number }> {
+  await assertAdmin();
+  const n = await purgeFromTrash(ids.filter((i) => typeof i === "string" && i));
+  revalidatePath("/admin/pedidos");
+  return { deleted: n };
 }

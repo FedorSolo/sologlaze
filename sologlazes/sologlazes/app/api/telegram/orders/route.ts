@@ -2,6 +2,8 @@ import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
 import { mlStatus, syncMlOrders } from "@/lib/mercadolibre";
 import { parseOrderComment } from "@/lib/order-comment";
+import { OutOfStockError } from "@/lib/stock";
+import { moveToTrash, purgeFromTrash, restoreFromTrash, trashedOrderIds } from "@/lib/order-trash";
 
 // Вкладка «Заказы» в Telegram-приложении «Мастерская».
 // Доступ: только из Telegram (проверка подписи initData токеном TELEGRAM_BOT_TOKEN)
@@ -100,15 +102,18 @@ function discountOf(type: unknown, value: unknown, base: number, label: string) 
 }
 
 async function list() {
-  const orders = await prisma.order.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 80,
-    include: {
-      items: { include: { variant: { select: { product: { select: { slug: true } } } } } },
-      shippingAddress: true,
-      user: { select: { name: true, email: true, phone: true } },
-    },
-  });
+  const trashed = await trashedOrderIds();
+  const include = {
+    items: { include: { variant: { select: { product: { select: { slug: true } } } } } },
+    shippingAddress: true,
+    user: { select: { name: true, email: true, phone: true } },
+  } as const;
+  // последние 80 заказов + всё, что лежит в корзине (даже старое)
+  const latest = await prisma.order.findMany({ orderBy: { createdAt: "desc" }, take: 80, include });
+  const have = new Set(latest.map((o) => o.id));
+  const missing = Array.from(trashed).filter((id) => !have.has(id));
+  const older = missing.length ? await prisma.order.findMany({ where: { id: { in: missing } }, include }) : [];
+  const orders = [...latest, ...older];
 
   // сводка за 13 месяцев (текущий и 12 предыдущих)
   const now = new Date();
@@ -150,6 +155,7 @@ async function list() {
         id: o.id,
         number: o.orderNumber,
         manual,
+        trashed: trashed.has(o.id),
         channel: channelOf(o),
         createdAt: o.createdAt,
         status: o.status,
@@ -291,20 +297,6 @@ async function create(body: Record<string, unknown>, who: string) {
   return { ok: true, number: order.orderNumber };
 }
 
-// «Удалить» ручную продажу = отменить (CANCELLED): из отчёта пропадает, но её можно восстановить.
-async function remove(body: Record<string, unknown>, who: string, restore = false) {
-  const id = text(body.id, 40);
-  const order = await prisma.order.findUnique({ where: { id }, select: { id: true, orderNumber: true, status: true } });
-  if (!order) throw new HttpError(404, "Продажа не найдена");
-  if (!isManual(order)) throw new HttpError(403, "Из приложения можно удалять только ручные продажи (M-…). Заказы с сайта — в админке.");
-  const status = restore ? "DELIVERED" : "CANCELLED";
-  await prisma.order.update({
-    where: { id: order.id },
-    data: { status, statusHistory: { create: { status, changedBy: who, note: restore ? "Восстановлена из Telegram" : "Удалена (отменена) из Telegram" } } },
-  });
-  return { ok: true };
-}
-
 export async function OPTIONS() {
   return new Response("ok", { headers: CORS });
 }
@@ -329,10 +321,12 @@ export async function POST(req: Request) {
         return json(await catalog());
       case "create":
         return json(await create(body, who));
-      case "delete":
-        return json(await remove(body, who));
+      case "delete": // в корзину — любой заказ (сайт, ML, ручной)
+        return json({ ok: true, n: await moveToTrash([text(body.id, 40)], who) });
       case "restore":
-        return json(await remove(body, who, true));
+        return json({ ok: true, n: await restoreFromTrash([text(body.id, 40)], who) });
+      case "purge": // навсегда — только из корзины
+        return json({ ok: true, n: await purgeFromTrash([text(body.id, 40)]) });
       case "mlSync":
         return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 2 * 3600e3 })) });
       default:
@@ -340,6 +334,7 @@ export async function POST(req: Request) {
     }
   } catch (e) {
     if (e instanceof HttpError) return json({ error: e.message }, e.status);
+    if (e instanceof OutOfStockError) return json({ error: `Не восстановить: ${e.message}` }, 409);
     console.error("telegram/orders:", e);
     return json({ error: "Ошибка на сайте, попробуйте ещё раз" }, 500);
   }
