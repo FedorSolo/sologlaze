@@ -9,10 +9,36 @@ import { createSign } from "crypto";
 const SCOPE = "https://www.googleapis.com/auth/webmasters.readonly";
 const TOKEN_URL = "https://oauth2.googleapis.com/token";
 
+// Acepta la clave tal como suele quedar guardada en Vercel: con \n literales, sin saltos de línea,
+// entre comillas, o incluso pegando el JSON completo de la cuenta de servicio.
+function normalizeKey(raw: string): string {
+  let v = raw.trim();
+  if (v.startsWith("{")) {
+    try {
+      v = String((JSON.parse(v) as { private_key?: string }).private_key ?? "");
+    } catch {
+      // seguimos con el texto tal cual
+    }
+  }
+  v = v.replace(/^["']+|["']+$/g, "").replace(/\\n/g, "\n").replace(/\r/g, "");
+  const m = v.match(/-----BEGIN ([A-Z ]+)-----([\s\S]*?)-----END \1-----/);
+  if (!m) return v;
+  const body = m[2].replace(/[^A-Za-z0-9+/=]/g, "");
+  return `-----BEGIN ${m[1]}-----\n${body.match(/.{1,64}/g)?.join("\n") ?? body}\n-----END ${m[1]}-----\n`;
+}
+
 export function gscConfig() {
-  const email = process.env.GSC_CLIENT_EMAIL?.trim();
-  const key = process.env.GSC_PRIVATE_KEY?.replace(/\\n/g, "\n").trim();
-  const site = (process.env.GSC_SITE_URL ?? "sc-domain:sologlazes.com.ar").trim();
+  const rawKey = process.env.GSC_PRIVATE_KEY;
+  let email = process.env.GSC_CLIENT_EMAIL?.trim().replace(/^["']+|["']+$/g, "");
+  if (!email && rawKey?.trim().startsWith("{")) {
+    try {
+      email = (JSON.parse(rawKey) as { client_email?: string }).client_email;
+    } catch {
+      // nada
+    }
+  }
+  const key = rawKey ? normalizeKey(rawKey) : "";
+  const site = (process.env.GSC_SITE_URL ?? "sc-domain:sologlazes.com.ar").trim().replace(/^["']+|["']+$/g, "");
   return email && key ? { email, key, site } : null;
 }
 
