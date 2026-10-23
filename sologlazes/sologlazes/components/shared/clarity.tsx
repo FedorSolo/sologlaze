@@ -3,11 +3,9 @@
 import { useEffect } from "react";
 import { IGNORE_KEY } from "@/lib/analytics-client";
 
-const ID = process.env.NEXT_PUBLIC_CLARITY_ID;
-
 // Microsoft Clarity: grabaciones de visitas, mapas de calor y detección de clics muertos / repetidos.
-// Solo se activa si existe NEXT_PUBLIC_CLARITY_ID, no carga en el navegador del dueño ni con "No rastrear".
-export function Clarity() {
+// El ID llega como prop desde el layout (CLARITY_ID o NEXT_PUBLIC_CLARITY_ID). Solo se activa si existe, no carga en el navegador del dueño ni con "No rastrear".
+export function Clarity({ id: ID }: { id?: string }) {
   useEffect(() => {
     if (!ID) return;
     try {
@@ -28,7 +26,7 @@ export function Clarity() {
     s.async = true;
     s.src = `https://www.clarity.ms/tag/${ID}`;
     document.head.appendChild(s);
-  }, []);
+  }, [ID]);
 
   return null;
 }

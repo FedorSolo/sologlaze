@@ -2,7 +2,7 @@ import { ExternalLink } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
-const ID = process.env.NEXT_PUBLIC_CLARITY_ID;
+const ID = process.env.CLARITY_ID ?? process.env.NEXT_PUBLIC_CLARITY_ID;
 
 const LINKS = [
   { key: "dashboard", title: "Panel general", text: "Resumen: sesiones, páginas vistas, profundidad de scroll, tiempo activo y alertas automáticas de problemas.", icon: "dashboard" },
@@ -39,7 +39,7 @@ export default function ComportamientoPage() {
               En el proyecto, «Settings» → «Overview»: copiá el <b>Project ID</b> (10 letras y números, por ejemplo <code className="rounded bg-surface-muted px-1">abc1de2fgh</code>).
             </li>
             <li>
-              En Vercel → Settings → Environment Variables creá <code className="rounded bg-surface-muted px-1">NEXT_PUBLIC_CLARITY_ID</code> con ese valor y hacé Redeploy.
+              En Vercel → Settings → Environment Variables creá <code className="rounded bg-surface-muted px-1">CLARITY_ID</code> con ese valor y hacé Redeploy.
             </li>
             <li>Al cabo de unos minutos de visitas ya aparecen las primeras grabaciones. Esta página va a mostrar los accesos directos.</li>
           </ol>

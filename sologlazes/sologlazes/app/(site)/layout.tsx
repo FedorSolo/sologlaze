@@ -75,7 +75,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <SiteFooter />
               <WhatsappFloat />
               <Analytics />
-              <Clarity />
+              <Clarity id={process.env.CLARITY_ID ?? process.env.NEXT_PUBLIC_CLARITY_ID} />
             </CartProvider>
           </AuthSessionProvider>
         </LangProvider>
