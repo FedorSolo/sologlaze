@@ -40,7 +40,10 @@ export async function GET(req: Request) {
     }
     return page(
       "Mercado Libre подключён",
-      `Аккаунт <b>${esc(me.nickname)}</b>.${imported} Новые продажи будут приходить в Telegram и в заказы магазина. Эту страницу можно закрыть.`,
+      `Аккаунт <b>${esc(me.nickname)}</b>.${imported} Новые продажи будут приходить в Telegram и в заказы магазина. Эту страницу можно закрыть.` +
+        (me.canRefresh
+          ? ""
+          : `<br><br><b style="color:#b03a2e">Внимание:</b> Mercado Libre не выдал ключ продления (offline_access), поэтому доступ закончится через 6 часов. Включите offline_access в настройках приложения на developers.mercadolibre.com.ar и подключите заново. Разрешения сейчас: ${esc(me.scope || "—")}`),
       true,
     );
   } catch (e) {

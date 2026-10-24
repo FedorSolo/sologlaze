@@ -86,7 +86,7 @@ export async function mlConnect(code: string, verifier: string, adminUserId: str
       session_state: String(me?.nickname ?? ""),
     },
   });
-  return { userId: t.user_id, nickname: String(me?.nickname ?? "") };
+  return { userId: t.user_id, nickname: String(me?.nickname ?? ""), canRefresh: Boolean(t.refresh_token), scope: t.scope ?? "" };
 }
 
 // ---------- диагностика: когда последний раз приходило уведомление от ML, ошибки, синхронизация.
@@ -139,7 +139,7 @@ async function mlAccount() {
   const acc = await prisma.account.findFirst({ where: { provider: PROVIDER } });
   if (!acc) throw new Error("Mercado Libre не подключён");
   if (acc.access_token && (acc.expires_at ?? 0) > Date.now() / 1000 + 300) return acc;
-  if (!acc.refresh_token) throw new Error("Доступ к Mercado Libre истёк — подключите заново");
+  if (!acc.refresh_token) throw new Error("Доступ к Mercado Libre истёк, а ключ продления (offline_access) ML не выдал — включите его в приложении ML и подключите заново");
   // refresh token у ML одноразовый: сразу сохраняем новый
   const t = await tokenRequest({ grant_type: "refresh_token", refresh_token: acc.refresh_token });
   return prisma.account.update({
