@@ -194,8 +194,9 @@ const r2 = (n: number) => Math.round(n * 100) / 100;
  * Загрузить заказ ML в магазин. Повторный вызов обновляет статус (оплата, отмена).
  * notify — писать ли в Telegram (новая продажа / отмена).
  */
-export async function importMlOrder(mlOrderId: string | number, opts: { notify?: boolean } = {}) {
-  const o = await mlGet<MlOrder>(`/orders/${mlOrderId}`);
+export async function importMlOrder(mlOrderId: string | number, opts: { notify?: boolean; order?: MlOrder } = {}) {
+  // поиск заказов ML уже возвращает заказ целиком — тогда повторно не запрашиваем
+  const o = opts.order?.order_items ? opts.order : await mlGet<MlOrder>(`/orders/${mlOrderId}`);
   const number = `ML-${o.id}`;
   const st = mapStatus(o.status);
   const existing = await prisma.order.findUnique({ where: { orderNumber: number }, select: { id: true, status: true, paymentStatus: true } });
@@ -272,7 +273,7 @@ export async function importMlOrder(mlOrderId: string | number, opts: { notify?:
 /** Подтянуть последние продажи (на случай пропущенных уведомлений). Уведомляет только о свежих. */
 export async function syncMlOrders(opts: { notifyNewerThanMs?: number; limit?: number } = {}) {
   const acc = await mlAccount();
-  const data = await mlGet<{ results: { id: number; date_created: string }[] }>(
+  const data = await mlGet<{ results: MlOrder[] }>(
     `/orders/search?seller=${acc.providerAccountId}&sort=date_desc&limit=${Math.min(opts.limit ?? 50, 50)}`,
   );
   let created = 0;
@@ -280,7 +281,7 @@ export async function syncMlOrders(opts: { notifyNewerThanMs?: number; limit?: n
   for (const r of data.results ?? []) {
     const fresh = opts.notifyNewerThanMs ? Date.now() - new Date(r.date_created).getTime() < opts.notifyNewerThanMs : false;
     try {
-      const res = await importMlOrder(r.id, { notify: fresh });
+      const res = await importMlOrder(r.id, { notify: fresh, order: r });
       if (res.created) created++;
       else if (res.changed) changed++;
     } catch (e) {

@@ -339,6 +339,9 @@ export async function POST(req: Request) {
     if (e instanceof HttpError) return json({ error: e.message }, e.status);
     if (e instanceof OutOfStockError) return json({ error: `Не восстановить: ${e.message}` }, 409);
     console.error("telegram/orders:", e);
-    return json({ error: "Ошибка на сайте, попробуйте ещё раз" }, 500);
+    const msg = e instanceof Error ? e.message : String(e);
+    // ошибки Mercado Libre показываем как есть — по ним видно, что не так с подключением
+    if (/mercado libre/i.test(msg)) return json({ error: msg }, 502);
+    return json({ error: `Ошибка на сайте: ${msg.slice(0, 200)}` }, 500);
   }
 }
