@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { importMlOrder, mlStatus } from "@/lib/mercadolibre";
+import { importMlOrder, mlNote, mlStatus, mlSyncIfStale } from "@/lib/mercadolibre";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,17 +11,20 @@ export const maxDuration = 60;
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => ({}))) as { topic?: string; resource?: string; user_id?: number };
   const id = String(body.resource ?? "").match(/\/orders\/(\d+)/)?.[1];
-  if ((body.topic === "orders_v2" || body.topic === "orders") && id) {
-    after(async () => {
+  console.log("ML webhook:", body.topic, body.resource);
+  after(async () => {
+    const st = await mlStatus();
+    if (!st.connected || (body.user_id && String(body.user_id) !== st.sellerId)) return;
+    await mlNote({ lastWebhookAt: new Date().toISOString(), lastWebhookTopic: String(body.topic ?? "") });
+    if ((body.topic === "orders_v2" || body.topic === "orders") && id) {
       try {
-        const st = await mlStatus();
-        if (!st.connected || (body.user_id && String(body.user_id) !== st.sellerId)) return;
         await importMlOrder(id, { notify: true });
       } catch (e) {
         console.error("ML webhook", id, e);
+        await mlNote({ lastError: { at: new Date().toISOString(), msg: e instanceof Error ? e.message : String(e), order: id } });
       }
-    });
-  }
+    }
+  });
   return new Response("ok");
 }
 

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { mlStatus, syncMlOrders } from "@/lib/mercadolibre";
+import { mlStatus, mlSyncIfStale, syncMlOrders } from "@/lib/mercadolibre";
+import { after } from "next/server";
 import { parseOrderComment } from "@/lib/order-comment";
 import { OutOfStockError } from "@/lib/stock";
 import { moveToTrash, purgeFromTrash, restoreFromTrash, trashedOrderIds } from "@/lib/order-trash";
@@ -142,11 +143,13 @@ async function list() {
   }
 
   const site = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://sologlazes.com.ar").replace(/\/$/, "");
-  const ml = await mlStatus().catch(() => ({ configured: false, connected: false, nickname: "", sellerId: "" }));
+  const ml = await mlStatus().catch(() => ({ configured: false, connected: false, nickname: "", sellerId: "", diag: {} as Record<string, unknown> }));
+  // запасной путь: пока приложение открыто, раз в 10 минут сверяемся с ML
+  if (ml.connected) after(() => mlSyncIfStale().catch((e) => console.error("ML auto-sync", e)));
   return {
     // когда ML подключён, его продажи приходят сами — вручную их не добавляем, чтобы не задвоить
     channels: ml.connected ? MANUAL_CHANNELS.filter((c) => c !== "Mercado Libre") : MANUAL_CHANNELS,
-    ml: { configured: ml.configured, connected: ml.connected, nickname: ml.nickname, connectUrl: `${site.replace("://sologlazes", "://www.sologlazes")}/api/mercadolibre/connect` },
+    ml: { configured: ml.configured, connected: ml.connected, nickname: ml.nickname, diag: ml.diag, connectUrl: `${site.replace("://sologlazes", "://www.sologlazes")}/api/mercadolibre/connect` },
     months: Object.values(months).sort((a, b) => (a.month < b.month ? 1 : -1)),
     orders: orders.map((o) => {
       const a = o.shippingAddress;
@@ -328,7 +331,7 @@ export async function POST(req: Request) {
       case "purge": // навсегда — только из корзины
         return json({ ok: true, n: await purgeFromTrash([text(body.id, 40)]) });
       case "mlSync":
-        return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 2 * 3600e3 })) });
+        return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 3 * 24 * 3600e3 })) });
       default:
         throw new HttpError(400, "Неизвестное действие");
     }
