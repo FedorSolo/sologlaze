@@ -89,9 +89,50 @@ export async function mlConnect(code: string, verifier: string, adminUserId: str
   return { userId: t.user_id, nickname: String(me?.nickname ?? "") };
 }
 
+// ---------- диагностика: когда последний раз приходило уведомление от ML, ошибки, синхронизация.
+// Хранится JSON-ом в Account.id_token (поле у этой записи больше ни для чего не используется).
+export type MlDiag = {
+  lastWebhookAt?: string;
+  lastWebhookTopic?: string;
+  lastSyncAt?: string;
+  lastError?: { at: string; msg: string; order?: string };
+};
+const readDiag = (raw: string | null | undefined): MlDiag => {
+  try {
+    return raw ? (JSON.parse(raw) as MlDiag) : {};
+  } catch {
+    return {};
+  }
+};
+export async function mlNote(patch: MlDiag) {
+  try {
+    const acc = await prisma.account.findFirst({ where: { provider: PROVIDER }, select: { id: true, id_token: true } });
+    if (!acc) return;
+    await prisma.account.update({ where: { id: acc.id }, data: { id_token: JSON.stringify({ ...readDiag(acc.id_token), ...patch }) } });
+  } catch (e) {
+    console.error("mlNote", e);
+  }
+}
+
 export async function mlStatus() {
   const acc = await prisma.account.findFirst({ where: { provider: PROVIDER } });
-  return { configured: mlConfigured(), connected: Boolean(acc), nickname: acc?.session_state ?? "", sellerId: acc?.providerAccountId ?? "" };
+  return {
+    configured: mlConfigured(),
+    connected: Boolean(acc),
+    nickname: acc?.session_state ?? "",
+    sellerId: acc?.providerAccountId ?? "",
+    diag: readDiag(acc?.id_token),
+  };
+}
+
+/** Запасной путь: подтянуть продажи, если давно не проверяли (уведомление от ML могло не прийти). */
+export async function mlSyncIfStale(maxAgeMs = 10 * 60e3) {
+  const st = await mlStatus();
+  if (!st.connected) return null;
+  const last = st.diag.lastSyncAt ? Date.parse(st.diag.lastSyncAt) : 0;
+  if (Date.now() - last < maxAgeMs) return null;
+  await mlNote({ lastSyncAt: new Date().toISOString() }); // сразу, чтобы параллельные вызовы не дублировали
+  return syncMlOrders({ limit: 50, notifyNewerThanMs: 3 * 24 * 3600e3 });
 }
 
 async function mlAccount() {
@@ -244,8 +285,10 @@ export async function syncMlOrders(opts: { notifyNewerThanMs?: number; limit?: n
       else if (res.changed) changed++;
     } catch (e) {
       console.error("ML sync", r.id, e);
+      await mlNote({ lastError: { at: new Date().toISOString(), msg: e instanceof Error ? e.message : String(e), order: String(r.id) } });
     }
   }
+  await mlNote({ lastSyncAt: new Date().toISOString() });
   return { created, changed, checked: data.results?.length ?? 0 };
 }
 
