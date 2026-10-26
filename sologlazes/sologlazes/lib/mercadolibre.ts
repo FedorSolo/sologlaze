@@ -332,6 +332,15 @@ export async function sendMlLabel(orderDbId: string, o: MlOrder, opts: { force?:
     if (already) return { sent: false, reason: "already" };
   }
   const sh = await mlGet<{ status?: string; substatus?: string; logistic_type?: string; tracking_number?: string }>(`/shipments/${shipId}`);
+  // печатать можно только пока посылка не сдана: substatus ready_to_print / printed
+  const printable = sh.status === "ready_to_ship" && (!sh.substatus || ["ready_to_print", "printed"].includes(sh.substatus));
+  if (sh.status === "ready_to_ship" && !printable) {
+    if (opts.force) {
+      const sub: Record<string, string> = { dropped_off: "посылка уже сдана в пункт приёма", in_hub: "посылка уже на складе ML", picked_up: "посылку уже забрали", in_packing_list: "посылка уже в листе сборки" };
+      throw new Error(`Mercado Libre: этикетка больше не нужна — ${sub[sh.substatus ?? ""] ?? `статус ${sh.substatus}`}`);
+    }
+    return { sent: false, reason: sh.substatus ?? "not_printable" };
+  }
   if (sh.status !== "ready_to_ship") {
     if (opts.force) {
       const human: Record<string, string> = { pending: "ещё не готово", handling: "ML ещё готовит отправление", shipped: "уже отправлено", delivered: "уже доставлено", cancelled: "отменено" };
