@@ -18,7 +18,7 @@ export async function POST(req: Request) {
     await mlNote({ lastWebhookAt: new Date().toISOString(), lastWebhookTopic: String(body.topic ?? "") });
     if ((body.topic === "orders_v2" || body.topic === "orders") && id) {
       try {
-        await importMlOrder(id, { notify: true });
+        await importMlOrder(id, { notify: true, label: true });
       } catch (e) {
         console.error("ML webhook", id, e);
         await mlNote({ lastError: { at: new Date().toISOString(), msg: e instanceof Error ? e.message : String(e), order: id } });

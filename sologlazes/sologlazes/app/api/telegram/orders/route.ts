@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { mlStatus, mlSyncIfStale, syncMlOrders } from "@/lib/mercadolibre";
+import { mlStatus, mlSyncIfStale, sendMlLabelFor, syncMlOrders } from "@/lib/mercadolibre";
 import { after } from "next/server";
 import { parseOrderComment } from "@/lib/order-comment";
 import { OutOfStockError } from "@/lib/stock";
@@ -330,6 +330,8 @@ export async function POST(req: Request) {
         return json({ ok: true, n: await restoreFromTrash([text(body.id, 40)], who) });
       case "purge": // навсегда — только из корзины
         return json({ ok: true, n: await purgeFromTrash([text(body.id, 40)]) });
+      case "mlLabel": // прислать PDF этикетки в чат тому, кто нажал
+        return json({ ok: true, ...(await sendMlLabelFor(text(body.id, 40), String(user.id))) });
       case "mlSync":
         return json({ ok: true, ...(await syncMlOrders({ limit: 50, notifyNewerThanMs: 3 * 24 * 3600e3 })) });
       default:

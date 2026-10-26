@@ -133,3 +133,29 @@ export async function notifyTelegramMercadoLibre(orderId: string, kind: "new" | 
     console.error("notifyTelegramMercadoLibre:", err);
   }
 }
+
+
+/** Отправить файл (например, PDF этикетки ML). chats — кому; по умолчанию всем из TELEGRAM_CHAT_IDS. */
+export async function sendTelegramDocument(file: ArrayBuffer, filename: string, caption: string, chats?: string[]) {
+  const token = process.env.TELEGRAM_BOT_TOKEN;
+  const to = chats?.length
+    ? chats
+    : (process.env.TELEGRAM_CHAT_IDS ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (!token || to.length === 0) return 0;
+  let sent = 0;
+  for (const chat_id of to) {
+    try {
+      const fd = new FormData();
+      fd.set("chat_id", chat_id);
+      fd.set("caption", caption);
+      fd.set("parse_mode", "HTML");
+      fd.set("document", new Blob([file], { type: "application/pdf" }), filename);
+      const res = await fetch(`https://api.telegram.org/bot${token}/sendDocument`, { method: "POST", body: fd, signal: AbortSignal.timeout(15000) });
+      if (res.ok) sent++;
+      else console.error("Telegram document:", res.status, await res.text());
+    } catch (err) {
+      console.error("Telegram: no se pudo enviar el documento", err);
+    }
+  }
+  return sent;
+}

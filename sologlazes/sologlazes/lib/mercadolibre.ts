@@ -1,6 +1,6 @@
 import crypto from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { notifyTelegramMercadoLibre } from "@/lib/telegram";
+import { notifyTelegramMercadoLibre, sendTelegramDocument } from "@/lib/telegram";
 
 // Продажи с Mercado Libre → заказы интернет-магазина (номер ML-<id заказа ML>) + сообщение в Telegram.
 // Только чтение из ML: на Mercado Libre ничего не отправляется и не меняется.
@@ -172,6 +172,7 @@ type MlOrder = {
   total_amount: number;
   paid_amount?: number;
   pack_id?: number | null;
+  shipping?: { id?: number | null } | null;
   seller?: { id: number };
   buyer?: { id: number; nickname?: string; first_name?: string; last_name?: string };
   order_items: {
@@ -194,7 +195,7 @@ const r2 = (n: number) => Math.round(n * 100) / 100;
  * Загрузить заказ ML в магазин. Повторный вызов обновляет статус (оплата, отмена).
  * notify — писать ли в Telegram (новая продажа / отмена).
  */
-export async function importMlOrder(mlOrderId: string | number, opts: { notify?: boolean; order?: MlOrder } = {}) {
+export async function importMlOrder(mlOrderId: string | number, opts: { notify?: boolean; label?: boolean; order?: MlOrder } = {}) {
   // поиск заказов ML уже возвращает заказ целиком — тогда повторно не запрашиваем
   const o = opts.order?.order_items ? opts.order : await mlGet<MlOrder>(`/orders/${mlOrderId}`);
   const number = `ML-${o.id}`;
@@ -209,12 +210,16 @@ export async function importMlOrder(mlOrderId: string | number, opts: { notify?:
         : st.status === "PAID" && existing.status === "PENDING"
           ? { status: "PAID" as const, paymentStatus: "PAID" as const }
           : null;
-    if (!next) return { id: existing.id, created: false, changed: false };
+    if (!next) {
+      if (opts.label) await sendMlLabel(existing.id, o).catch((e) => console.error("ML label", o.id, e));
+      return { id: existing.id, created: false, changed: false };
+    }
     await prisma.order.update({
       where: { id: existing.id },
       data: { ...next, statusHistory: { create: { status: next.status, note: `Mercado Libre: ${o.status}` } } },
     });
     if (opts.notify) await notifyTelegramMercadoLibre(existing.id, next.status === "CANCELLED" ? "cancelled" : "paid");
+    if (opts.label) await sendMlLabel(existing.id, o).catch((e) => console.error("ML label", o.id, e));
     return { id: existing.id, created: false, changed: true };
   }
 
@@ -262,6 +267,7 @@ export async function importMlOrder(mlOrderId: string | number, opts: { notify?:
       },
     });
     if (opts.notify && st.status !== "CANCELLED") await notifyTelegramMercadoLibre(order.id, "new");
+    if (opts.label) await sendMlLabel(order.id, o).catch((e) => console.error("ML label", o.id, e));
     return { id: order.id, created: true, changed: true };
   } catch (e: any) {
     await prisma.address.delete({ where: { id: address.id } }).catch(() => {});
@@ -281,7 +287,7 @@ export async function syncMlOrders(opts: { notifyNewerThanMs?: number; limit?: n
   for (const r of data.results ?? []) {
     const fresh = opts.notifyNewerThanMs ? Date.now() - new Date(r.date_created).getTime() < opts.notifyNewerThanMs : false;
     try {
-      const res = await importMlOrder(r.id, { notify: fresh, order: r });
+      const res = await importMlOrder(r.id, { notify: fresh, label: fresh, order: r });
       if (res.created) created++;
       else if (res.changed) changed++;
     } catch (e) {
@@ -291,6 +297,66 @@ export async function syncMlOrders(opts: { notifyNewerThanMs?: number; limit?: n
   }
   await mlNote({ lastSyncAt: new Date().toISOString() });
   return { created, changed, checked: data.results?.length ?? 0 };
+}
+
+// ---------- этикетки отправлений (Mercado Envíos)
+
+const LABEL_NOTE = "🏷 Этикетка ML отправлена";
+
+async function mlGetPdf(path: string): Promise<ArrayBuffer> {
+  const acc = await mlAccount();
+  const res = await fetch(`${API}${path}`, { headers: { authorization: `Bearer ${acc.access_token}` }, signal: AbortSignal.timeout(20000) });
+  if (!res.ok) {
+    const t = await res.text().catch(() => "");
+    let msg = t;
+    try { msg = JSON.parse(t)?.message ?? t; } catch {}
+    throw new Error(`Mercado Libre этикетка: ${res.status} ${String(msg).slice(0, 160)}`.trim());
+  }
+  return res.arrayBuffer();
+}
+
+/**
+ * Прислать PDF этикетки в Telegram, когда посылка готова к отправке.
+ * Автоматически — один раз на отправление (у корзины ML несколько заказов делят одно отправление).
+ * force — по кнопке в приложении: прислать ещё раз (to — кому).
+ */
+export async function sendMlLabel(orderDbId: string, o: MlOrder, opts: { force?: boolean; to?: string[] } = {}) {
+  const shipId = o.shipping?.id;
+  if (!shipId) {
+    if (opts.force) throw new Error("Mercado Libre: у этой продажи нет отправления Mercado Envíos — этикетки нет");
+    return { sent: false, reason: "no_shipping" };
+  }
+  if (!opts.force) {
+    if (o.status !== "paid") return { sent: false, reason: "not_paid" };
+    const already = await prisma.orderStatusHistory.findFirst({ where: { note: { contains: `envío ${shipId}` } }, select: { id: true } });
+    if (already) return { sent: false, reason: "already" };
+  }
+  const sh = await mlGet<{ status?: string; substatus?: string; logistic_type?: string; tracking_number?: string }>(`/shipments/${shipId}`);
+  if (sh.status !== "ready_to_ship") {
+    if (opts.force) {
+      const human: Record<string, string> = { pending: "ещё не готово", handling: "ML ещё готовит отправление", shipped: "уже отправлено", delivered: "уже доставлено", cancelled: "отменено" };
+      throw new Error(`Mercado Libre: этикетка недоступна — отправление ${human[sh.status ?? ""] ?? sh.status ?? "неизвестно"}`);
+    }
+    return { sent: false, reason: sh.status ?? "unknown" };
+  }
+  const pdf = await mlGetPdf(`/shipment_labels?shipment_ids=${shipId}&response_type=pdf`);
+  const order = await prisma.order.findUnique({ where: { id: orderDbId }, select: { orderNumber: true, status: true, items: { select: { productNameSnapshot: true, quantity: true } } } });
+  const what = (order?.items ?? []).map((i) => `${i.productNameSnapshot} × ${i.quantity}`).join(", ").slice(0, 600);
+  const h = (t: string) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const caption = `🏷 Этикетка Mercado Libre <code>${h(order?.orderNumber ?? `ML-${o.id}`)}</code>\n${h(what)}`;
+  const n = await sendTelegramDocument(pdf, `etiqueta-ML-${o.id}.pdf`, caption, opts.to);
+  if (n > 0 && order && !opts.force) {
+    await prisma.orderStatusHistory.create({ data: { orderId: orderDbId, status: order.status, note: `${LABEL_NOTE} (envío ${shipId})` } });
+  }
+  return { sent: n > 0, reason: n > 0 ? "ok" : "telegram" };
+}
+
+/** По кнопке «Этикетка» в Telegram-приложении: прислать этикетку тому, кто нажал. */
+export async function sendMlLabelFor(orderDbId: string, chatId: string) {
+  const order = await prisma.order.findUnique({ where: { id: orderDbId }, select: { orderNumber: true } });
+  if (!order?.orderNumber.startsWith("ML-")) throw new Error("Mercado Libre: это не заказ с Mercado Libre");
+  const o = await mlGet<MlOrder>(`/orders/${order.orderNumber.slice(3)}`);
+  return sendMlLabel(orderDbId, o, { force: true, to: [chatId] });
 }
 
 // ---------- state для OAuth (защита от подделки callback)
