@@ -14,14 +14,16 @@ export async function collectionMetadata(slug: string, lang: Lang): Promise<Meta
   if (!collection) return {};
   const url = absoluteUrl(hrefFor(lang, `/catalogo/${collection.slug}`));
   // El título lleva palabras que la gente busca ("esmaltes … para cerámica"), no solo el nombre de la línea.
-  const title = collectionSeoText[collection.slug]?.[lang]?.heading ?? collection.name;
+  const seoBlock = collectionSeoText[collection.slug]?.[lang];
+  const title = seoBlock?.heading ?? collection.name;
+  const description = seoBlock?.metaDescription ?? collection.description;
   return {
     title,
-    description: collection.description,
+    description,
     alternates: languageAlternates(`/catalogo/${collection.slug}`, lang),
     openGraph: {
-      title: collection.name,
-      description: collection.description,
+      title,
+      description,
       images: collection.heroImageUrl ? [collection.heroImageUrl] : undefined,
       url,
       type: "website",
@@ -84,7 +86,7 @@ export async function CollectionView({ slug, lang }: { slug: string; lang: Lang 
       <nav aria-label={tr(lang, "breadcrumb")} className="mb-4 text-sm text-text-secondary">
         <Link href={hrefFor(lang, "/")}>{tr(lang, "inicio")}</Link> / <Link href={hrefFor(lang, "/catalogo")}>{tr(lang, "catalogo")}</Link> / {collection.name}
       </nav>
-      <h1 className="mb-2 text-h1 lg:text-h1-lg">{collection.name}</h1>
+      <h1 className="mb-2 text-h1 lg:text-h1-lg">{seo?.h1 ?? collection.name}</h1>
       <p className="mb-8 max-w-xl text-body-lg text-text-secondary">{collection.description}</p>
       <CatalogBrowser products={products} filterGroups={filterGroups} />
 

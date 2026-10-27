@@ -22,11 +22,11 @@ const interDisplay = localFont({
 export const metadata: Metadata = {
   metadataBase: new URL("https://sologlazes.com.ar"),
   title: {
-    default: "SoloGlazes — Esmaltes cerámicos en polvo",
+    default: "Esmaltes cerámicos para alta temperatura, gres y vajilla — SoloGlazes",
     template: "%s · SoloGlazes",
   },
   description:
-    "Esmaltes cerámicos en polvo para cono 5–6 (1200°C). Se preparan mezclando con agua según proporciones exactas, con modificadores que mejoran la aplicación sobre el bizcocho. Cristalina, Floating y GRRR.",
+    "Esmaltes cerámicos en polvo para alta temperatura (cono 5–6, 1200 °C): esmaltes para gres y vajilla, con modificadores incluidos y proporciones exactas. Cristalina, Floating y GRRR. Envíos a toda Argentina.",
   openGraph: {
     siteName: "SoloGlazes",
     type: "website",

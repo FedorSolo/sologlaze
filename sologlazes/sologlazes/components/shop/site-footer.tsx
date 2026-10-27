@@ -12,6 +12,7 @@ export function SiteFooter() {
       title: t("footProducto"),
       links: [
         { href: "/catalogo", label: t("catalogo") },
+        { href: "/esmaltes-para-gres", label: t("gres") },
         ...["cristalina", "floating", "grrr", "pack-prueba"].map((slug) => ({ href: `/catalogo/${slug}`, label: COLLECTION_NAMES[slug][lang] })),
       ],
     },

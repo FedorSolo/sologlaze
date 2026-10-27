@@ -85,6 +85,20 @@ export async function HomeView({ lang }: { lang: Lang }) {
         </div>
       </section>
 
+      {/* Texto SEO */}
+      <section className="container pb-16 lg:pb-24">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="mb-5 text-h2 lg:text-h2-lg">{t("homeSeoH2")}</h2>
+          <p className="mb-4 text-body leading-relaxed text-text-secondary">{t("homeSeoP1")}</p>
+          <p className="mb-6 text-body leading-relaxed text-text-secondary">{t("homeSeoP2")}</p>
+          <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
+            <span className="text-text-secondary">{t("homeSeoLinks")}:</span>
+            <Link href="/esmaltes-para-gres" className="text-accent hover:underline">{t("homeSeoGres")}</Link>
+            <Link href="/guia/como-aplicar" className="text-accent hover:underline">{t("homeSeoGuia")}</Link>
+          </p>
+        </div>
+      </section>
+
       {/* Coworking */}
       <section className="bg-surface-muted py-16 lg:py-24">
         <div className="container flex flex-col items-center gap-4 text-center">

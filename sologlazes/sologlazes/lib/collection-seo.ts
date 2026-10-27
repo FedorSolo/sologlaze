@@ -3,27 +3,31 @@ import type { Lang } from "@/lib/i18n-dict";
 // Texto SEO por línea (abajo de la grilla de cada colección), en los tres idiomas.
 // `faq` alimenta tanto las preguntas visibles como el JSON-LD FAQPage.
 export type SeoFaq = { q: string; a: string };
-export type SeoBlock = { heading: string; paragraphs: string[]; faqHeading: string; faq: SeoFaq[] };
+export type SeoBlock = { heading: string; h1?: string; metaDescription?: string; paragraphs: string[]; faqHeading: string; faq: SeoFaq[] };
 
 export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
   cristalina: {
     es: {
-      heading: "Esmaltes Cristalina para cerámica en Argentina",
+      heading: "Esmaltes Cristalina para gres y alta temperatura",
+      h1: "Esmalte cerámico Cristalina para alta temperatura",
+      metaDescription: "Esmalte cerámico Cristalina para gres, alta temperatura (cono 5–6, 1200 °C). En polvo, apto vajilla, con modificadores. Envíos a toda Argentina.",
       paragraphs: [
-        "La línea Cristalina de SoloGlazes son esmaltes cerámicos en polvo para cono 5–6 (1200 °C) que desarrollan un efecto de cristales abiertos sobre la superficie de la pieza, con una terminación brillante única en cada cocción. Vienen en los colores Miel, Gris, Rosado-Marrón, Lavanda y Verde, con sus modificadores incluidos para lograr el efecto cristalino correctamente.",
-        "Son esmaltes aptos para vajilla y lavavajillas, pensados para ceramistas en Argentina que buscan un acabado decorativo con carácter propio, sin depender de importaciones ni de fórmulas de mezcla complicadas: las proporciones de agua y modificador vienen detalladas para cada peso.",
-        "Los esmaltes Cristalina se venden en 500 g y 1 kg, y también podés probarlos primero en el Pack Prueba de 5 esmaltes de 200 g. Si es tu primera vez con esmaltes cristalinos, la Guía de aplicación explica cómo preparar la mezcla, cuántas capas aplicar y cómo cocer para que los cristales se desarrollen bien.",
+        "Cristalina es la línea de esmalte cerámico para alta temperatura de SoloGlazes con efecto de cristales abiertos: un esmalte para gres en polvo, de cono 5–6 (1200 °C), que deja una terminación brillante distinta en cada cocción. Está disponible en Miel, Gris, Rosado-Marrón, Lavanda y Verde, siempre con los modificadores incluidos para que el efecto cristalino se desarrolle bien.",
+        "Es un esmalte para vajilla y lavavajillas, ideal para tazas, platos, bowls y piezas decorativas de gres o pasta de alta temperatura. Está pensado para ceramistas de Argentina que buscan un esmalte de alta temperatura de producción local, sin importaciones ni recetas complicadas: las proporciones de agua y modificador vienen detalladas para cada peso.",
+        "Se vende en presentaciones de 500 g y 1 kg, y podés probarlo antes en el Pack Prueba de 5 esmaltes de 200 g. Si es tu primera vez, la Guía de aplicación explica cómo preparar la mezcla, cuántas capas aplicar y cómo cocer en horno eléctrico o a gas.",
       ],
       faqHeading: "Preguntas frecuentes sobre los esmaltes Cristalina",
       faq: [
-        { q: "¿A qué temperatura se cuecen los esmaltes Cristalina?", a: "A cono 5–6, es decir alrededor de 1200 °C, sobre piezas de gres o pasta de alta temperatura ya bizcochadas." },
+        { q: "¿Qué es un esmalte cerámico para alta temperatura?", a: "Es un esmalte que se cuece a cono 5–6 (alrededor de 1200 °C) sobre gres o pasta de alta temperatura ya bizcochada. Los esmaltes Cristalina están formulados para ese rango." },
         { q: "¿Qué colores tiene la línea Cristalina?", a: "Miel, Gris, Rosado-Marrón, Lavanda y Verde. Cada color se vende en polvo, con los modificadores incluidos." },
-        { q: "¿Los esmaltes Cristalina sirven para vajilla?", a: "Sí, son aptos para vajilla y lavavajillas una vez cocidos correctamente a la temperatura indicada." },
+        { q: "¿Es un esmalte para vajilla?", a: "Sí, es apto para vajilla y lavavajillas una vez cocido correctamente a la temperatura indicada." },
         { q: "¿Cómo preparo el esmalte en polvo?", a: "Se diluye con agua y se agregan los modificadores incluidos, siguiendo las proporciones que vienen para cada peso y que están detalladas en la Guía de aplicación." },
       ],
     },
     en: {
-      heading: "Cristalina ceramic glazes — made in Argentina",
+      heading: "Cristalina glazes for stoneware and high-fire ceramics",
+      h1: "High-temperature ceramic glaze Cristalina",
+      metaDescription: "Cristalina stoneware glaze for high-fire ceramics (cone 5–6, 1200 °C). Powder, dishwasher-safe once fired, modifiers included.",
       paragraphs: [
         "The SoloGlazes Cristalina line is a range of powder ceramic glazes for cone 5–6 (1200 °C) that grow open crystals across the surface of the piece, leaving a glossy finish that is unique with every firing. Colors: Honey, Grey, Pink-Brown, Lavender and Green, each with the modifiers included so the crystal effect develops properly.",
         "These glazes are suitable for tableware and dishwasher use, made for ceramists who want a decorative finish with real character without relying on imports or complicated mixing formulas: the water and modifier proportions are listed for each weight.",
@@ -38,7 +42,9 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
       ],
     },
     ru: {
-      heading: "Глазури Cristalina для керамики — производство в Аргентине",
+      heading: "Глазури Cristalina для греса и высоких температур",
+      h1: "Высокотемпературная керамическая глазурь Cristalina",
+      metaDescription: "Глазурь для греса Cristalina, высокотемпературная (конус 5–6, 1200 °C). Порошок, подходит для посуды, модификаторы в комплекте.",
       paragraphs: [
         "Линейка Cristalina от SoloGlazes — это порошковые керамические глазури для конуса 5–6 (1200 °C), на поверхности которых при обжиге вырастают раскрытые кристаллы, а блестящее покрытие каждый раз получается неповторимым. Цвета: Мёд, Серый, Розово-коричневый, Лаванда и Зелёный; модификаторы для правильного кристаллического эффекта уже в комплекте.",
         "Глазури подходят для посуды и посудомоечной машины. Они сделаны для керамистов, которым нужен выразительный декоративный результат без импорта и сложных рецептов: пропорции воды и модификаторов указаны для каждого веса.",
@@ -55,22 +61,26 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
   },
   floating: {
     es: {
-      heading: "Esmaltes Floating para cerámica en Argentina",
+      heading: "Esmaltes Floating para gres y alta temperatura",
+      h1: "Esmalte para gres Floating: manchas flotantes y degradé",
+      metaDescription: "Esmalte para gres Floating de alta temperatura (cono 5–6, 1200 °C): manchas flotantes y degradé natural. En polvo. Envíos a toda Argentina.",
       paragraphs: [
-        "Floating es la línea de esmaltes cerámicos de SoloGlazes con efecto de manchas flotantes y degradé natural, ideal para piezas de gres y cerámica artística cocidas a cono 5–6 (1200 °C). Está disponible en Verde, Verde Grisáceo, Celeste, Azul, Gris Oscuro, Menta y Rosa Crema.",
-        "Cada esmalte Floating es en polvo, se prepara con agua según proporciones exactas y trae sus modificadores incluidos. Es una opción buscada por talleres y ceramistas de Buenos Aires y de todo el país que quieren un efecto orgánico y variable, distinto en cada pieza.",
+        "Floating es la línea de esmaltes para gres de SoloGlazes con efecto de manchas flotantes y degradé natural. Son esmaltes cerámicos de alta temperatura en polvo, para piezas de gres y cerámica artística cocidas a cono 5–6 (1200 °C), disponibles en Verde, Verde Grisáceo, Celeste, Azul, Gris Oscuro, Menta y Rosa Crema.",
+        "Cada esmalte Floating se prepara con agua según proporciones exactas y trae sus modificadores incluidos. Funciona en piezas utilitarias y decorativas, y es una opción buscada por talleres y ceramistas de Buenos Aires y de todo el país que quieren un efecto orgánico y variable, distinto en cada pieza.",
         "Con Floating podés trabajar un solo color o combinar dos tonos para lograr degradés propios. Se venden en 500 g y 1 kg, y para decidir el color sin arriesgar una compra grande podés armar tu Pack Prueba con cinco esmaltes de 200 g a elección.",
       ],
       faqHeading: "Preguntas frecuentes sobre los esmaltes Floating",
       faq: [
-        { q: "¿Qué efecto tienen los esmaltes Floating?", a: "Producen manchas flotantes y un degradé natural que cambia de una pieza a otra, por eso cada cerámica queda distinta." },
-        { q: "¿A qué temperatura se cuecen?", a: "A cono 5–6 (alrededor de 1200 °C), pensados para gres y cerámica artística de alta temperatura." },
+        { q: "¿Qué efecto tiene este esmalte para gres?", a: "Produce manchas flotantes y un degradé natural que cambia de una pieza a otra, por eso cada cerámica queda distinta." },
+        { q: "¿A qué temperatura se cuece este esmalte de alta temperatura?", a: "A cono 5–6 (alrededor de 1200 °C), pensado para gres y cerámica artística de alta temperatura." },
         { q: "¿Qué colores hay en la línea Floating?", a: "Verde, Verde Grisáceo, Celeste, Azul, Gris Oscuro, Menta y Rosa Crema." },
         { q: "¿Puedo probar un color antes de comprar un kilo?", a: "Sí: el Pack Prueba incluye cinco esmaltes de 200 g a elección entre las líneas Cristalina y Floating." },
       ],
     },
     en: {
-      heading: "Floating ceramic glazes — made in Argentina",
+      heading: "Floating glazes for stoneware and high-fire ceramics",
+      h1: "Floating stoneware glaze: floating patches and gradient",
+      metaDescription: "Floating stoneware glaze, high-fire (cone 5–6, 1200 °C): floating patches and natural gradient. Powder, modifiers included.",
       paragraphs: [
         "Floating is the SoloGlazes line of ceramic glazes with a floating-patch effect and a natural gradient, ideal for stoneware and art ceramics fired at cone 5–6 (1200 °C). Available in Green, Grey-Green, Sky Blue, Blue, Dark Grey, Mint and Cream Pink.",
         "Every Floating glaze is a powder, mixed with water in exact proportions, and comes with its modifiers included. It is a favorite of studios and ceramists in Buenos Aires and across the country who want an organic, variable effect that is different on every piece.",
@@ -85,7 +95,9 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
       ],
     },
     ru: {
-      heading: "Глазури Floating для керамики — производство в Аргентине",
+      heading: "Глазури Floating для греса и высоких температур",
+      h1: "Глазурь для греса Floating: плывущие пятна и градиент",
+      metaDescription: "Глазурь для греса Floating, высокотемпературная (конус 5–6, 1200 °C): плывущие пятна и градиент. Порошок, модификаторы в комплекте.",
       paragraphs: [
         "Floating — линейка керамических глазурей SoloGlazes с эффектом «плывущих» пятен и естественным градиентом. Идеальна для изделий из греса и художественной керамики, обжигаемых на конусе 5–6 (1200 °C). Цвета: Зелёный, Серо-зелёный, Небесно-голубой, Синий, Тёмно-серый, Мятный и Кремово-розовый.",
         "Каждая глазурь Floating поставляется в порошке, разводится водой в точных пропорциях, модификаторы уже в комплекте. Её выбирают мастерские и керамисты Буэнос-Айреса и всей страны, которым нужен живой, меняющийся эффект — разный на каждом изделии.",
@@ -102,22 +114,26 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
   },
   grrr: {
     es: {
-      heading: "Esmaltes GRRR para cerámica en Argentina",
+      heading: "Esmaltes GRRR para gres y alta temperatura",
+      h1: "Esmalte cerámico GRRR para alta temperatura: texturas de pelaje",
+      metaDescription: "Esmalte cerámico GRRR para gres de alta temperatura (cono 5–6, 1200 °C): texturas que imitan pelaje animal. En polvo. Envíos a toda Argentina.",
       paragraphs: [
-        "GRRR es la línea de esmaltes cerámicos más expresiva de SoloGlazes: texturas vibrantes y manchas fluidas inspiradas en el pelaje animal, para piezas de cerámica con mucho carácter, cocidas a cono 5–6 (1200 °C). Incluye los colores Fuego, Leopardo de las Nieves y Pantera Rosa.",
-        "Se aplican en dos capas (base y esmalte superior) con los modificadores correspondientes a cada frasco. Es la serie elegida por ceramistas que buscan un efecto decorativo fuerte y diferenciado dentro del catálogo de esmaltes para gres en Argentina.",
+        "GRRR es la línea de esmaltes cerámicos para alta temperatura más expresiva de SoloGlazes: texturas vibrantes y manchas fluidas inspiradas en el pelaje animal, sobre gres y cerámica cocida a cono 5–6 (1200 °C). Incluye los colores Fuego, Leopardo de las Nieves y Pantera Rosa.",
+        "Son esmaltes para gres en polvo que se aplican en dos capas (base y esmalte superior) con los modificadores que trae cada frasco. Es la serie elegida por ceramistas que buscan un efecto decorativo fuerte y diferenciado dentro del catálogo de esmaltes para gres en Argentina.",
         "Como el resultado depende de la aplicación en dos pasos, conviene leer la Guía de aplicación antes de empezar y hacer una prueba en una pieza chica. GRRR no forma parte del Pack Prueba: se compra por separado, en su presentación completa.",
       ],
       faqHeading: "Preguntas frecuentes sobre los esmaltes GRRR",
       faq: [
         { q: "¿Qué colores tiene la línea GRRR?", a: "Fuego, Leopardo de las Nieves y Pantera Rosa, con texturas que recuerdan al pelaje animal." },
-        { q: "¿Cómo se aplican los esmaltes GRRR?", a: "En dos capas: primero la base y después el esmalte superior, con los modificadores que trae cada frasco." },
-        { q: "¿A qué temperatura se cuecen?", a: "A cono 5–6, alrededor de 1200 °C." },
+        { q: "¿Cómo se aplica este esmalte para gres?", a: "En dos capas: primero la base y después el esmalte superior, con los modificadores que trae cada frasco." },
+        { q: "¿A qué temperatura se cuece?", a: "A cono 5–6, alrededor de 1200 °C: es un esmalte cerámico de alta temperatura." },
         { q: "¿GRRR viene en el Pack Prueba?", a: "No, el Pack Prueba incluye las líneas Cristalina y Floating. GRRR se compra por separado." },
       ],
     },
     en: {
-      heading: "GRRR ceramic glazes — made in Argentina",
+      heading: "GRRR glazes for stoneware and high-fire ceramics",
+      h1: "GRRR high-temperature ceramic glaze: fur-like textures",
+      metaDescription: "GRRR high-fire ceramic glaze for stoneware (cone 5–6, 1200 °C): textures inspired by animal fur. Powder, two-coat application.",
       paragraphs: [
         "GRRR is the most expressive SoloGlazes line: vibrant textures and fluid patches inspired by animal fur, for ceramic pieces with plenty of character, fired at cone 5–6 (1200 °C). Colors: Fire, Snow Leopard and Pink Panther.",
         "They are applied in two coats (a base glaze and a top glaze) with the modifiers that come with each jar. It is the series chosen by ceramists who want a strong, distinctive decorative effect within the range of stoneware glazes available in Argentina.",
@@ -132,7 +148,9 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
       ],
     },
     ru: {
-      heading: "Глазури GRRR для керамики — производство в Аргентине",
+      heading: "Глазури GRRR для греса и высоких температур",
+      h1: "Высокотемпературная глазурь GRRR: текстура звериной шерсти",
+      metaDescription: "Высокотемпературная глазурь GRRR для греса (конус 5–6, 1200 °C): текстуры звериной шерсти. Порошок, нанесение в два слоя.",
       paragraphs: [
         "GRRR — самая выразительная линейка SoloGlazes: яркие текстуры и текучие пятна, вдохновлённые звериной шерстью, для изделий с характером, обжигаемых на конусе 5–6 (1200 °C). Цвета: Огонь, Снежный леопард и Розовая пантера.",
         "Наносятся в два слоя (базовая и верхняя глазурь) с модификаторами из соответствующих баночек. Эту серию выбирают керамисты, которым нужен сильный, ни на что не похожий декоративный эффект среди глазурей для греса в Аргентине.",
@@ -149,22 +167,26 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
   },
   "pack-prueba": {
     es: {
-      heading: "Pack Prueba de esmaltes cerámicos SoloGlazes",
+      heading: "Pack Prueba de esmaltes para gres, cono 5–6",
+      h1: "Pack Prueba: 5 esmaltes cerámicos para alta temperatura",
+      metaDescription: "Pack Prueba: 5 esmaltes cerámicos para gres de alta temperatura, 200 g cada uno a elección (cono 5–5,5). Probá colores antes de comprar 500 g o 1 kg.",
       paragraphs: [
-        "El Pack Prueba de SoloGlazes incluye cinco esmaltes cerámicos de 200 g a elección, de cualquier color de las líneas Cristalina y Floating (no incluye GRRR). Es la forma más económica de probar distintos efectos y colores antes de comprar un esmalte de 500 g o 1 kg.",
+        "El Pack Prueba de SoloGlazes incluye cinco esmaltes cerámicos para alta temperatura de 200 g a elección, de cualquier color de las líneas Cristalina y Floating (no incluye GRRR). Es la forma más económica de probar distintos efectos y colores de esmalte para gres antes de comprar un esmalte de 500 g o 1 kg.",
         "Pensado para ceramistas que recién empiezan a trabajar con los esmaltes SoloGlazes en Buenos Aires y en toda Argentina, o que quieren testear una combinación nueva de colores antes de aplicarla en una pieza grande.",
         "El peso total del pack, con los modificadores incluidos, es de 1,1 kg: una cantidad ideal para probar el color sobre tu propia arcilla, en tu horno, y comprobar que el esmalte funciona para vos. Todos los esmaltes son para cono 5–5,5 (1200 °C).",
       ],
       faqHeading: "Preguntas frecuentes sobre el Pack Prueba",
       faq: [
-        { q: "¿Qué incluye el Pack Prueba?", a: "Cinco esmaltes de 200 g a elección, con sus modificadores incluidos. El peso total del pack es de 1,1 kg." },
+        { q: "¿Qué incluye el Pack Prueba de esmaltes?", a: "Cinco esmaltes de 200 g a elección, con sus modificadores incluidos. El peso total del pack es de 1,1 kg." },
         { q: "¿Puedo elegir cualquier color?", a: "Podés elegir entre los colores de las líneas Cristalina y Floating. La línea GRRR no está incluida en el pack." },
         { q: "¿Cómo elijo los cinco esmaltes?", a: "Los elegís en el carrito, después de agregar el pack, y nosotros te los enviamos." },
-        { q: "¿A qué temperatura se cuecen los esmaltes del pack?", a: "A cono 5–5,5, alrededor de 1200 °C." },
+        { q: "¿A qué temperatura se cuecen los esmaltes del pack?", a: "A cono 5–5,5, alrededor de 1200 °C: son esmaltes cerámicos de alta temperatura para gres." },
       ],
     },
     en: {
-      heading: "SoloGlazes ceramic glaze Test Pack",
+      heading: "Test Pack of stoneware glazes, cone 5–6",
+      h1: "Test Pack: 5 high-temperature ceramic glazes",
+      metaDescription: "Test Pack: five 200 g high-fire stoneware glazes of your choice (cone 5–5.5). Try colors before buying 500 g or 1 kg.",
       paragraphs: [
         "The SoloGlazes Test Pack includes five 200 g ceramic glazes of your choice, in any color from the Cristalina and Floating lines (GRRR is not included). It is the most affordable way to try different effects and colors before buying a 500 g or 1 kg glaze.",
         "Made for ceramists who are just starting to work with SoloGlazes in Buenos Aires and across Argentina, or who want to test a new color combination before applying it to a large piece.",
@@ -179,7 +201,9 @@ export const collectionSeoText: Record<string, Record<Lang, SeoBlock>> = {
       ],
     },
     ru: {
-      heading: "Пробный набор керамических глазурей SoloGlazes",
+      heading: "Пробный набор глазурей для греса, конус 5–6",
+      h1: "Пробный набор: 5 высокотемпературных глазурей",
+      metaDescription: "Пробный набор: пять глазурей для греса по 200 г на выбор (конус 5–5,5). Попробуйте цвета перед покупкой 500 г или 1 кг.",
       paragraphs: [
         "В пробный набор SoloGlazes входят пять керамических глазурей по 200 г на ваш выбор — любых цветов из линеек Cristalina и Floating (GRRR не входит). Это самый доступный способ попробовать разные эффекты и цвета перед покупкой глазури на 500 г или 1 кг.",
         "Набор создан для керамистов, которые только начинают работать с глазурями SoloGlazes в Буэнос-Айресе и по всей Аргентине, а также для тех, кто хочет проверить новое сочетание цветов, прежде чем наносить его на большое изделие.",
