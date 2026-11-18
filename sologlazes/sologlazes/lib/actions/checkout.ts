@@ -119,10 +119,11 @@ export async function createOrderAction(input: CheckoutInput): Promise<CheckoutR
           statusHistory: { create: { status: "PENDING", note: "Pedido creado desde el checkout" } },
         },
       });
-    });
+    }, { maxWait: 10000, timeout: 30000 });
   } catch (err) {
     if (err instanceof OutOfStockError) return { ok: false, error: `${err.message} Actualizá tu carrito e intentá de nuevo.` };
-    throw err;
+    console.error("Error creando el pedido:", err);
+    return { ok: false, error: "No pudimos procesar el pedido en este momento. Intentá de nuevo en unos segundos o escribinos por WhatsApp." };
   }
 
   try {

@@ -27,15 +27,23 @@ function aggregate(items: StockItem[]) {
  * Las presentaciones sin registro de inventario no controlan stock y se dejan pasar.
  */
 export async function reserveStock(tx: Tx, items: StockItem[], labels: Record<string, string>) {
-  for (const [variantId, qty] of aggregate(items)) {
-    const inv = await tx.inventory.findUnique({ where: { variantId } });
-    if (!inv) continue;
+  const wanted = aggregate(items);
+  if (wanted.size === 0) return;
+  // Una sola consulta para todos los inventarios (antes eran 3 consultas por producto → timeout con carritos grandes).
+  const invs = await tx.inventory.findMany({ where: { variantId: { in: [...wanted.keys()] } }, select: { variantId: true } });
+  const tracked = new Set(invs.map((i) => i.variantId));
+  const toZero: string[] = [];
+  for (const [variantId, qty] of wanted) {
+    if (!tracked.has(variantId)) continue;
     const res = await tx.inventory.updateMany({
       where: { variantId, quantity: { gte: qty } },
       data: { quantity: { decrement: qty } },
     });
     if (res.count === 0) throw new OutOfStockError(labels[variantId] ?? "un producto");
-    await tx.inventory.updateMany({ where: { variantId, quantity: 0 }, data: { status: "OUT_OF_STOCK" } });
+    toZero.push(variantId);
+  }
+  if (toZero.length > 0) {
+    await tx.inventory.updateMany({ where: { variantId: { in: toZero }, quantity: 0 }, data: { status: "OUT_OF_STOCK" } });
   }
 }
 
