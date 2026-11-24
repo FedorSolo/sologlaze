@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { absoluteUrl } from "@/lib/seo";
+import { GuideScrollHints } from "@/components/content/guide-scroll-hints";
 
 export const metadata = {
   title: "Guía del ceramista: temperaturas y conos, cómo aplicar el esmalte y proporciones",
@@ -72,6 +73,7 @@ export default function GuiaPage() {
       {ld.map((o, i) => (
         <script key={i} type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(o) }} />
       ))}
+      <GuideScrollHints />
       <nav aria-label="Breadcrumb" className="mb-4 text-sm text-text-secondary">
         <Link href="/">Inicio</Link> / Guía
       </nav>
