@@ -37,10 +37,10 @@ const tables = [
 ];
 
 const nav = [
+  { href: "#video", label: "Video" },
   { href: "#temperaturas-y-conos", label: "Temperaturas y conos" },
   { href: "#como-aplicar", label: "Cómo aplicar" },
   { href: "#proporciones", label: "Proporciones" },
-  { href: "#video", label: "Video" },
   { href: "#cristalina-floating-grrr", label: "Cristalina, Floating o GRRR" },
 ];
 
@@ -82,6 +82,20 @@ export default function GuiaPage() {
           Todo lo que necesitás para usar los esmaltes SoloGlazes en una sola página: a qué temperatura se
           cuecen, cómo prepararlos, cómo aplicarlos y qué efecto da cada línea.
         </p>
+
+        <section id="video" className="mb-8 scroll-mt-24">
+          <h2 className="mb-3 text-h2">Video: cómo mezclar los esmaltes</h2>
+          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-surface-muted">
+            <iframe
+              src="https://www.youtube.com/embed/Gu6luGOo1vA"
+              title="Cómo mezclar los esmaltes SoloGlazes"
+              className="absolute inset-0 h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          </div>
+        </section>
+
         <nav aria-label="Contenido" className="flex flex-wrap gap-2">
           {nav.map((n) => (
             <a key={n.href} href={n.href} className="rounded-full border border-border px-4 py-1.5 text-sm transition-colors hover:border-accent hover:text-accent">
@@ -116,10 +130,6 @@ export default function GuiaPage() {
               <li>Usá conos pirométricos de control dentro de la cámara para confirmar.</li>
               <li>Si trabajás en un taller o escuela, preguntá directamente qué cono usan.</li>
             </ul>
-            <p>
-              Si tu horno no llega a cono 5,5, escribinos por WhatsApp antes de comprar: te ayudamos a evitar
-              una compra que no vas a poder cocer.
-            </p>
           </div>
         </section>
 
@@ -195,21 +205,6 @@ export default function GuiaPage() {
               </div>
             </div>
           ))}
-        </section>
-
-        {/* 4. Video */}
-        <section id="video" className={sectionCls}>
-          <h2 className="mb-3 text-h2">Video: cómo mezclar los esmaltes</h2>
-          <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-surface-muted">
-            <iframe
-              src="https://www.youtube.com/embed/Gu6luGOo1vA"
-              title="Cómo mezclar los esmaltes SoloGlazes"
-              className="absolute inset-0 h-full w-full"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          </div>
         </section>
 
         {/* 5. Líneas (al final, para indexación) */}
