@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 
-// Enlace corto (QR del empaque): lleva directo a las proporciones de la guía,
+// Enlace corto (QR del empaque): lleva al inicio de la guía (video),
 // conservando los parámetros utm para la analítica.
 export const metadata = { robots: { index: false, follow: true } };
 
@@ -13,5 +13,5 @@ export default async function Page({ searchParams }: { searchParams: Promise<Rec
     if (val) qs.set(k, val.slice(0, 80));
   }
   const q = qs.toString();
-  redirect(`/guia${q ? `?${q}` : ""}#proporciones`);
+  redirect(`/guia${q ? `?${q}` : ""}`);
 }
