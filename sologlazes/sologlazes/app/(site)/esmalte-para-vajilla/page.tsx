@@ -48,7 +48,7 @@ const config: LandingConfig = {
     { q: "¿Los demás esmaltes de SoloGlazes sirven para vajilla?", a: "Cristalina es la línea que indicamos como apta para vajilla y lavavajillas. Si querés usar otro color o línea en piezas para alimentos, escribinos y te asesoramos antes de comprar." },
     { q: "¿Puedo probar el esmalte antes de comprar un kilo?", a: "Sí, con el Pack Prueba: cinco esmaltes de 200 g a elección entre las líneas Cristalina y Floating." },
   ],
-  related: [{ href: "/guia/como-aplicar", label: "Guía de aplicación" }, { href: "/guia/temperaturas-y-conos", label: "Temperaturas y conos" }],
+  related: [{ href: "/guia#como-aplicar", label: "Guía de aplicación" }, { href: "/guia#temperaturas-y-conos", label: "Temperaturas y conos" }],
 };
 
 export const metadata = landingMetadata(config);

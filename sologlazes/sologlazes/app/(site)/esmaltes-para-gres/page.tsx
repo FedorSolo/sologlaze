@@ -222,8 +222,8 @@ export default async function EsmaltesParaGresPage() {
           Si buscás un esmalte para vajilla, nuestras líneas están pensadas para piezas de uso diario: tazas, platos, bowls y fuentes. La línea
           Cristalina es apta para vajilla y lavavajillas cocida correctamente a la temperatura indicada. Para obtener una superficie bien madura y
           resistente, seguí las proporciones y la curva de cocción de la{" "}
-          <Link href="/guia/como-aplicar" className="text-accent underline">Guía de aplicación</Link> y la información de{" "}
-          <Link href="/guia/temperaturas-y-conos" className="text-accent underline">temperaturas y conos</Link>.
+          <Link href="/guia#como-aplicar" className="text-accent underline">Guía de aplicación</Link> y la información de{" "}
+          <Link href="/guia#temperaturas-y-conos" className="text-accent underline">temperaturas y conos</Link>.
         </p>
 
         <h2 className="mb-4 text-h2">Cómo aplicar un esmalte para gres en polvo</h2>

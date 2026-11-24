@@ -52,7 +52,7 @@ const config: LandingConfig = {
     { q: "¿Qué presentaciones hay?", a: "Cristalina y Floating se venden en 500 g y 1 kg. También hay un Pack Prueba con cinco esmaltes de 200 g a elección." },
     { q: "¿Hacen envíos a todo el país?", a: "Sí, enviamos a toda Argentina desde Buenos Aires." },
   ],
-  related: [{ href: "/guia/como-aplicar", label: "Guía de aplicación" }],
+  related: [{ href: "/guia#como-aplicar", label: "Guía de aplicación" }],
 };
 
 export const metadata = landingMetadata(config);

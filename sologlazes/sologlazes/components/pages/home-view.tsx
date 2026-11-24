@@ -94,7 +94,7 @@ export async function HomeView({ lang }: { lang: Lang }) {
           <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm">
             <span className="text-text-secondary">{t("homeSeoLinks")}:</span>
             <Link href="/esmaltes-para-gres" className="text-accent hover:underline">{t("homeSeoGres")}</Link>
-            <Link href="/guia/como-aplicar" className="text-accent hover:underline">{t("homeSeoGuia")}</Link>
+            <Link href="/guia#como-aplicar" className="text-accent hover:underline">{t("homeSeoGuia")}</Link>
             {lang === "es" && <Link href="/esmalte-para-vajilla" className="text-accent hover:underline">Esmalte para vajilla</Link>}
             {lang === "es" && <Link href="/esmaltes-para-ceramica" className="text-accent hover:underline">Esmaltes para cerámica</Link>}
           </p>

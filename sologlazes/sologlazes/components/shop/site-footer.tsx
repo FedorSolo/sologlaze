@@ -20,7 +20,7 @@ export function SiteFooter() {
       title: t("footAyuda"),
       links: [
         { href: "/envios-y-devoluciones", label: t("envios") },
-        { href: "/guia/como-aplicar", label: t("guiaAplicacion") },
+        { href: "/guia#como-aplicar", label: t("guiaAplicacion") },
         { href: "/contacto", label: t("contactoWa") },
       ],
     },

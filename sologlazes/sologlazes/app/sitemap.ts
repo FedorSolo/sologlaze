@@ -30,9 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Solo en español (no tienen versión traducida)
   const staticRoutes: Entry[] = [
     "/guia",
-    "/guia/temperaturas-y-conos",
-    "/guia/superficies",
-    "/guia/como-aplicar",
     "/nosotros",
     "/coworking",
     "/esmaltes-para-gres",
