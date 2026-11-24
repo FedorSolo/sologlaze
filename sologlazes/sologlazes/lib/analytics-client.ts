@@ -45,6 +45,7 @@ const SOURCES: [RegExp, string][] = [
   [/whatsapp|^wa$/, "WhatsApp"],
   [/mercadolibre/, "Mercado Libre"],
   [/youtube/, "YouTube"],
+  [/^qr/, "QR en empaque"],
   [/tiktok/, "TikTok"],
   [/pinterest/, "Pinterest"],
   [/(^|\.)t\.co$|twitter|^x$/, "X / Twitter"],
