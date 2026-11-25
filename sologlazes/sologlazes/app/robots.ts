@@ -24,7 +24,7 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "*", allow: "/", disallow: PRIVATE },
       { userAgent: AI_CRAWLERS, allow: "/", disallow: PRIVATE },
     ],
-    sitemap: "https://sologlazes.com.ar/sitemap.xml",
-    host: "https://sologlazes.com.ar",
+    sitemap: "https://www.sologlazes.com.ar/sitemap.xml",
+    host: "https://www.sologlazes.com.ar",
   };
 }

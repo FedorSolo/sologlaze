@@ -20,7 +20,7 @@ const interDisplay = localFont({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://sologlazes.com.ar"),
+  metadataBase: new URL("https://www.sologlazes.com.ar"),
   title: {
     default: "Esmaltes cerámicos para alta temperatura, gres y vajilla — SoloGlazes",
     template: "%s · SoloGlazes",
@@ -31,7 +31,7 @@ export const metadata: Metadata = {
     siteName: "SoloGlazes",
     type: "website",
     locale: "es_AR",
-    url: "https://sologlazes.com.ar",
+    url: "https://www.sologlazes.com.ar",
   },
   twitter: { card: "summary_large_image" },
 };
@@ -41,12 +41,12 @@ export const metadata: Metadata = {
 const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": ["Organization", "Store"],
-  "@id": "https://sologlazes.com.ar/#organization",
+  "@id": "https://www.sologlazes.com.ar/#organization",
   name: "SoloGlazes",
   alternateName: "SoloGlazes Argentina",
-  url: "https://sologlazes.com.ar",
-  logo: "https://sologlazes.com.ar/images/logo-sologlazes.png",
-  image: "https://sologlazes.com.ar/images/hero.jpg",
+  url: "https://www.sologlazes.com.ar",
+  logo: "https://www.sologlazes.com.ar/images/logo-sologlazes.png",
+  image: "https://www.sologlazes.com.ar/images/hero.jpg",
   description: "Esmaltes cerámicos en polvo para cono 5–6 (1200 °C), con modificadores incluidos. Taller y coworking para ceramistas en Buenos Aires.",
   telephone: "+54 9 11 2737 9589",
   priceRange: "$$",

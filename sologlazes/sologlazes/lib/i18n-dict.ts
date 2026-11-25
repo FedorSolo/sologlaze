@@ -7,7 +7,7 @@
 
 export type Lang = "es" | "en" | "ru";
 export const LANGS: Lang[] = ["es", "en", "ru"];
-export const BASE_URL = "https://sologlazes.com.ar";
+export const BASE_URL = "https://www.sologlazes.com.ar";
 
 export const LANG_NAMES: Record<Lang, string> = { es: "Español", en: "English", ru: "Русский" };
 export const LANG_SHORT: Record<Lang, string> = { es: "ES", en: "EN", ru: "RU" };

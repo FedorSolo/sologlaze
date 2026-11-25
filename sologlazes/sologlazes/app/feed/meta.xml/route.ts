@@ -1,11 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
 // Feed de productos para el Catálogo de Meta (Facebook / Instagram).
-// URL: https://sologlazes.com.ar/feed/meta.xml
+// URL: https://www.sologlazes.com.ar/feed/meta.xml
 // Cada peso (0.5 kg / 1 kg) sale como un ítem propio, agrupado por producto (item_group_id).
 export const revalidate = 3600;
 
-const BASE_URL = "https://sologlazes.com.ar";
+const BASE_URL = "https://www.sologlazes.com.ar";
 
 function esc(s: string) {
   return s
